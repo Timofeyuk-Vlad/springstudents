@@ -4,7 +4,25 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="25a73310-97b7-4a62-8eba-04f9b928d437" name="Changes" comment="Setup github actions for sonar." />
+    <list default="true" id="25a73310-97b7-4a62-8eba-04f9b928d437" name="Changes" comment="Setup github actions for sonar.">
+      <change beforePath="$PROJECT_DIR$/.github/workflows/build.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/build.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springstudents/.gitattributes" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springstudents/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springstudents/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springstudents/mvnw" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springstudents/mvnw.cmd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springstudents/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springstudents/src/main/java/ru/kors/springstudents/SpringStudentsApplication.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springstudents/src/main/java/ru/kors/springstudents/controller/StudentController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springstudents/src/main/java/ru/kors/springstudents/model/Student.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springstudents/src/main/java/ru/kors/springstudents/repository/InMemoryStudentDao.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springstudents/src/main/java/ru/kors/springstudents/service/StudentService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springstudents/src/main/java/ru/kors/springstudents/service/impl/InMemoryStudentServiceImpl.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springstudents/src/main/resources/application.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springstudents/src/main/resources/static/Index.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springstudents/src/test/java/ru/kors/springstudents/SpringstudentsApplicationTests.java" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -32,21 +50,32 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Application.SpringStudentsApplication.executor": "Run",
-    "DefaultHtmlFileTemplate": "HTML File",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/Vlad Timofeyuk/Downloads/Telegram Desktop/google-checkstyle.xml",
-    "project.structure.last.edited": "Project",
-    "project.structure.proportion": "0.0",
-    "project.structure.side.proportion": "0.0",
-    "settings.editor.selected.configurable": "preferences.pluginManager"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.SpringStudentsApplication.executor&quot;: &quot;Run&quot;,
+    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Vlad Timofeyuk/Downloads/Telegram Desktop/google-checkstyle.xml&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
   }
-}]]></component>
+}</component>
+  <component name="RunManager">
+    <configuration default="true" type="JetRunConfigurationType">
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <option name="filePath" />
+      <method v="2" />
+    </configuration>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="SvnConfiguration">
     <configuration>C:\Users\Vlad Timofeyuk\AppData\Roaming\Subversion</configuration>
