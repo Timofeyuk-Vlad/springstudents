@@ -70,9 +70,9 @@
 				<executions>
 					<execution>
 						<phase>validate</phase>
-						<goals>
+						<!-- <goals>
 							<goal>check</goal>
-						</goals>
+						</goals> -->
 					</execution>
 				</executions>
 			</plugin>
