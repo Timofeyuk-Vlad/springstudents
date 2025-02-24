@@ -21,7 +21,7 @@
 15) запись в душевую.
 
 **Технологии**
-Backend - Java Spring Boot
-Frontend - ещё не выбран
-Базы данных - ещё не выбран
-Сборка - Maven
+1) Backend - Java Spring Boot
+2) Frontend - ещё не выбран
+3) Базы данных - ещё не выбран
+4) Сборка - Maven
