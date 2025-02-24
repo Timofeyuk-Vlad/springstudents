@@ -5,23 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="25a73310-97b7-4a62-8eba-04f9b928d437" name="Changes" comment="Setup github actions for sonar.">
-      <change beforePath="$PROJECT_DIR$/.github/workflows/build.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/build.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/springstudents/.gitattributes" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/springstudents/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/springstudents/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/springstudents/mvnw" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/springstudents/mvnw.cmd" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/springstudents/pom.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/springstudents/src/main/java/ru/kors/springstudents/SpringStudentsApplication.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/springstudents/src/main/java/ru/kors/springstudents/controller/StudentController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/springstudents/src/main/java/ru/kors/springstudents/model/Student.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/springstudents/src/main/java/ru/kors/springstudents/repository/InMemoryStudentDao.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/springstudents/src/main/java/ru/kors/springstudents/service/StudentService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/springstudents/src/main/java/ru/kors/springstudents/service/impl/InMemoryStudentServiceImpl.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/springstudents/src/main/resources/application.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/springstudents/src/main/resources/static/Index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/springstudents/src/test/java/ru/kors/springstudents/SpringstudentsApplicationTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
