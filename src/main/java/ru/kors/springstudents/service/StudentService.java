@@ -1,7 +1,6 @@
 package ru.kors.springstudents.service;
 
 import java.util.List;
-import org.springframework.stereotype.Service;
 import ru.kors.springstudents.model.Student;
 
 public interface StudentService {
