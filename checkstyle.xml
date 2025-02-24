@@ -96,10 +96,10 @@
             <property name="id" value="LeftCurlyNl"/>
             <property name="option" value="nl"/>
             <property name="tokens"
-                      value="LITERAL_CASE, LITERAL_DEFAULT"/>
+                      value="LITERAL_DEFAULT"/>
         </module>
         <module name="SuppressionXpathSingleFilter">
-            <!-- LITERAL_CASE, LITERAL_DEFAULT are reused in SWITCH_RULE  -->
+            <!-- LITERAL_DEFAULT are reused in SWITCH_RULE  -->
             <property name="id" value="LeftCurlyNl"/>
             <property name="query" value="//SWITCH_RULE/SLIST"/>
         </module>
@@ -115,7 +115,7 @@
             <property name="tokens"
                       value="CLASS_DEF, METHOD_DEF, CTOR_DEF, LITERAL_FOR, LITERAL_WHILE, STATIC_INIT,
                     INSTANCE_INIT, ANNOTATION_DEF, ENUM_DEF, INTERFACE_DEF, RECORD_DEF,
-                    COMPACT_CTOR_DEF, LITERAL_CASE, LITERAL_FINALLY"/>
+                    COMPACT_CTOR_DEF, LITERAL_FINALLY"/>
         </module>
         <module name="SuppressionXpathSingleFilter">
             <!-- suppression is required till https://github.com/checkstyle/checkstyle/issues/7541 -->
@@ -128,7 +128,7 @@
                       value="COMMA, SEMI, TYPECAST, LITERAL_IF, LITERAL_ELSE, LITERAL_RETURN,
                     LITERAL_WHILE, LITERAL_DO, LITERAL_FOR, LITERAL_FINALLY, DO_WHILE, ELLIPSIS,
                     LITERAL_SYNCHRONIZED, LITERAL_TRY, LITERAL_CATCH, LAMBDA,
-                    LITERAL_YIELD, LITERAL_CASE, LITERAL_WHEN"/>
+                    LITERAL_YIELD, LITERAL_WHEN"/>
         </module>
         <module name="WhitespaceAround">
             <property name="allowEmptyConstructors" value="true"/>
