@@ -6,8 +6,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest
 class SpringStudentsApplicationTests {
 
-@Test
-void contextLoads() {
-//no tests at this point
-}
+    @Test
+    void contextLoads() {
+        //no tests at this point
+    }
 }
