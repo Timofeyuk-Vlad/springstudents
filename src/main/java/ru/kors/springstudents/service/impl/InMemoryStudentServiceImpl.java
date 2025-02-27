@@ -29,6 +29,11 @@ public class InMemoryStudentServiceImpl implements StudentService {
     }
 
     @Override
+    public Student findById(Integer id) {
+        return repository.findById(id);
+    }
+
+    @Override
     public Student updateStudent(Student student) {
         return repository.updateStudent(student);
     }

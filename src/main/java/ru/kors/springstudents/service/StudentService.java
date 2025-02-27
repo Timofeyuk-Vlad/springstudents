@@ -10,6 +10,8 @@ public interface StudentService {
 
     Student findByEmail(String email);
 
+    Student findById(Integer id);
+
     Student updateStudent(Student student);
 
     void deleteStudent(String email);
