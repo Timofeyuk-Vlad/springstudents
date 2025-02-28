@@ -21,23 +21,23 @@ public class InMemoryStudentDao {
 
     public Student findByEmail(String email) {
         return students.stream()
-            .filter(element -> element.getEmail().equals(email))
-            .findFirst()
-            .orElse(null);
+    .filter(element -> element.getEmail().equals(email))
+    .findFirst()
+    .orElse(null);
     }
 
     public Student findById(Integer id) {
         return students.stream()
-            .filter(element -> element.getId().equals(id))
-            .findFirst()
-            .orElse(null);
+    .filter(element -> element.getId().equals(id))
+    .findFirst()
+    .orElse(null);
     }
 
     public Student updateStudent(Student student) {
         var studentIndex = IntStream.range(0, students.size())
-            .filter(index -> students.get(index).getEmail().equals(student.getEmail()))
-            .findFirst()
-            .orElse(-1);
+                .filter(index -> students.get(index).getEmail().equals(student.getEmail()))
+                .findFirst()
+                                .orElse(-1);
         if (studentIndex > -1) {
             students.set(studentIndex, student);
             return student;
