@@ -5,10 +5,16 @@ plugins {
 
 	checkstyle
 	id("org.sonarqube") version "6.0.1.5171"
+
+	id("jacoco")
 }
 
 group = "ru.kors"
 version = "0.0.1-SNAPSHOT"
+
+jacoco {
+	toolVersion = "0.8.8"
+}
 
 java {
 	toolchain {
@@ -25,7 +31,7 @@ sonarqube {
 		property("sonar.projectKey", "Timofeyuk-Vlad_springstudents")
 		property("sonar.organization", "timofeyuk-vlad")
 		property("sonar.host.url", "https://sonarcloud.io")
-		property ("sonar.login", "ваш_токен")
+		property ("sonar.login", "614e9074d9260a962597cc89a8b8a2e5aedd49dc")
 	}
 }
 
@@ -40,6 +46,21 @@ dependencies {
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.projectlombok:lombok")
+	testImplementation ("org.junit.jupiter:junit-jupiter:5.9.3")
+	testRuntimeOnly ("org.junit.jupiter:junit-jupiter-engine:5.9.3")
+	implementation ("org.jacoco:org.jacoco.core:0.8.8")
+}
+
+tasks.test {
+	finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+	dependsOn(tasks.test)
+	reports {
+		xml.required.set(true)
+		html.required.set(true)
+	}
 }
 
 tasks.withType<Test> {
