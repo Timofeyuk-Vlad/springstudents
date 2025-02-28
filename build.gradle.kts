@@ -31,7 +31,7 @@ sonarqube {
 		property("sonar.projectKey", "Timofeyuk-Vlad_springstudents")
 		property("sonar.organization", "timofeyuk-vlad")
 		property("sonar.host.url", "https://sonarcloud.io")
-		property ("sonar.login", "614e9074d9260a962597cc89a8b8a2e5aedd49dc")
+		property ("sonar.qualitygate.wait", "false")
 	}
 }
 
