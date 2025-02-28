@@ -20,11 +20,12 @@ checkstyle {
 	toolVersion = "10.21.2"
 }
 
-sonar {
+sonarqube {
 	properties {
 		property("sonar.projectKey", "Timofeyuk-Vlad_springstudents")
 		property("sonar.organization", "timofeyuk-vlad")
 		property("sonar.host.url", "https://sonarcloud.io")
+		property ("sonar.login", "ваш_токен")
 	}
 }
 
