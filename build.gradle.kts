@@ -42,25 +42,13 @@ repositories {
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
+
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.projectlombok:lombok")
-	testImplementation ("org.junit.jupiter:junit-jupiter:5.9.3")
-	testRuntimeOnly ("org.junit.jupiter:junit-jupiter-engine:5.9.3")
-	implementation ("org.jacoco:org.jacoco.core:0.8.8")
-}
 
-tasks.test {
-	finalizedBy(tasks.jacocoTestReport)
-}
-
-tasks.jacocoTestReport {
-	dependsOn(tasks.test)
-	reports {
-		xml.required.set(true)
-		html.required.set(true)
-	}
 }
 
 tasks.withType<Test> {
