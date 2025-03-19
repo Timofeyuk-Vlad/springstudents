@@ -19,7 +19,7 @@ public class InMemoryStudentServiceImpl implements StudentService {
     }
 
     @Override
-    public Student saveStudent(Student student) {
+    public boolean saveStudent(Student student) {
         return repository.saveStudent(student);
     }
 
@@ -39,7 +39,7 @@ public class InMemoryStudentServiceImpl implements StudentService {
     }
 
     @Override
-    public void deleteStudent(String email) {
-        repository.deleteStudent(email);
+    public boolean deleteStudent(Integer id) {
+        return repository.deleteStudent(id);
     }
 }

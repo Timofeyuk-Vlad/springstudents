@@ -2,6 +2,7 @@ package ru.kors.springstudents.controller;
 
 import java.util.List;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 import ru.kors.springstudents.model.Student;
 import ru.kors.springstudents.service.StudentService;
 
@@ -29,38 +31,63 @@ public class StudentController {
 
   @PostMapping("save_student")
   public String saveStudent(@RequestBody Student student) {
-    service.saveStudent(student);
-    return "Student successfully saved";
+    boolean isSaved = service.saveStudent(student);
+    if (!isSaved) {
+      return "There is already a student with ID " + student.getId();
+    }
+    return "Student with id " + student.getId() + " successfully saved";
   }
 
   @GetMapping("/email/{email}")
   public Student findByEmail(@PathVariable String email) {
-    return service.findByEmail(email);
+    Student student = service.findByEmail(email);
+    if (student == null) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student with email "
+          + email + " not found");
+    }
+    return student;
   }
 
-  @GetMapping("/id/{id}")
+  @GetMapping("/{id}")
   public Student findById(@PathVariable Integer id) {
-    return service.findById(id);
+    Student student = service.findById(id);
+    if (student == null) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student with id " + id
+          + " not found");
+    }
+    return student;
   }
 
   @GetMapping("/search")
-  public Student findStudent(@RequestParam(required = false) String email,
-                 @RequestParam(required = false) Integer id) {
+  public Student findStudent(@RequestParam(required = false) String email) {
     if (email != null) {
-      return service.findByEmail(email);
-    } else if (id != null) {
-      return service.findById(id);
+      Student student = service.findByEmail(email);
+      if (student == null) {
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student with email " + email
+            + " not found");
+      }
+      return student;
     }
-    return null;
+    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        "Either email or id must be provided");
   }
 
   @PutMapping("update_student")
   public Student updateStudent(@RequestBody Student student) {
-    return service.updateStudent(student);
+    Student updatedStudent = service.updateStudent(student);
+    if (updatedStudent == null) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
+    }
+    return updatedStudent;
   }
 
-  @DeleteMapping("delete_student/{email}")
-  public void deleteStudent(@PathVariable String email) {
-    service.deleteStudent(email);
+  @DeleteMapping("delete_student/{id}")
+  public String deleteStudent(@PathVariable Integer id) {
+    boolean isDeleted = service.deleteStudent(id);
+    if (!isDeleted) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student with id "
+          + id + " not found");
+    }
+    return "Student with id " + id + " successfully delete";
   }
 }

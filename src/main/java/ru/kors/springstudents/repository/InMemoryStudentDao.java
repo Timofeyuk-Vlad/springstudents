@@ -14,9 +14,16 @@ public class InMemoryStudentDao {
         return students;
     }
 
-    public Student saveStudent(Student student) {
+    public boolean saveStudent(Student student) {
+        var studentIndex = IntStream.range(0, students.size())
+            .filter(index -> students.get(index).getId().equals(student.getId()))
+            .findFirst()
+            .orElse(-1);
+        if (studentIndex > -1) {
+            return false;
+        }
         students.add(student);
-        return student;
+        return true;
     }
 
     public Student findByEmail(String email) {
@@ -35,9 +42,9 @@ public class InMemoryStudentDao {
 
     public Student updateStudent(Student student) {
         var studentIndex = IntStream.range(0, students.size())
-                .filter(index -> students.get(index).getEmail().equals(student.getEmail()))
+                .filter(index -> students.get(index).getId().equals(student.getId()))
                 .findFirst()
-                                .orElse(-1);
+                .orElse(-1);
         if (studentIndex > -1) {
             students.set(studentIndex, student);
             return student;
@@ -45,10 +52,12 @@ public class InMemoryStudentDao {
         return null;
     }
 
-    public void deleteStudent(String email) {
-        var student = findByEmail(email);
+    public boolean deleteStudent(Integer id) {
+        var student = findById(id);
         if (student != null) {
             students.remove(student);
+            return true;
         }
+        return false;
     }
 }
