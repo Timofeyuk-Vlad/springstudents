@@ -1,1 +1,32 @@
-spring.application.name=springstudents
+spring:
+  application:
+    name: springstudents
+  datasource:
+    url: jdbc:postgresql://localhost:5432/student_db
+    username: postgres
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 30000
+      max-lifetime: 1800000
+      connection-timeout: 30000
+  jpa:
+    hibernate:
+      ddl-auto: create
+    database: postgresql
+    show-sql: true
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  cache:
+    type: simple
+
+server:
+  error:
+    include-stacktrace: on_param
+  port: 8080
+
+debug: false

@@ -21,6 +21,7 @@ bin/
 .idea
 *.iws
 *.iml
+*.log
 *.ipr
 out/
 !**/src/main/**/out/
