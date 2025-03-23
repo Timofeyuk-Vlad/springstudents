@@ -2,6 +2,7 @@ package ru.kors.springstudents.repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.IntStream;
 import org.springframework.stereotype.Repository;
 import ru.kors.springstudents.model.Student;
@@ -14,16 +15,17 @@ public class InMemoryStudentDao {
         return students;
     }
 
-    public boolean saveStudent(Student student) {
+    public Student saveStudent(Student student) {
         var studentIndex = IntStream.range(0, students.size())
             .filter(index -> students.get(index).getId().equals(student.getId()))
             .findFirst()
             .orElse(-1);
         if (studentIndex > -1) {
-            return false;
+            return null; //false
         }
         students.add(student);
-        return true;
+        //return true;
+        return student;
     }
 
     public Student findByEmail(String email) {
@@ -33,11 +35,10 @@ public class InMemoryStudentDao {
     .orElse(null);
     }
 
-    public Student findById(Integer id) {
+    public Optional<Student> findById(Long id) {
         return students.stream()
-    .filter(element -> element.getId().equals(id))
-    .findFirst()
-    .orElse(null);
+            .filter(element -> element.getId().equals(id))
+            .findFirst();
     }
 
     public Student updateStudent(Student student) {
@@ -52,12 +53,9 @@ public class InMemoryStudentDao {
         return null;
     }
 
-    public boolean deleteStudent(Integer id) {
-        var student = findById(id);
-        if (student != null) {
-            students.remove(student);
-            return true;
-        }
-        return false;
+    public void deleteStudent(Long id) {
+        Student student = findById(id)
+            .orElseThrow(() -> new RuntimeException("Студент с id " + id + " не найден"));
+        students.remove(student);
     }
 }

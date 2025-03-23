@@ -14,7 +14,7 @@ spring:
       connection-timeout: 30000
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     database: postgresql
     show-sql: true
     open-in-view: false

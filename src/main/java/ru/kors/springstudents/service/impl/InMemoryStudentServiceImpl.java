@@ -1,6 +1,9 @@
 package ru.kors.springstudents.service.impl;
 
 import java.util.List;
+import java.util.Optional;
+
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.kors.springstudents.model.Student;
@@ -18,8 +21,13 @@ public class InMemoryStudentServiceImpl implements StudentService {
         return repository.findAllStudent();
     }
 
+//    @Override
+//    public boolean saveStudent(Student student) {
+//        return repository.saveStudent(student);
+//    }
+
     @Override
-    public boolean saveStudent(Student student) {
+    public Student saveStudent(Student student) {
         return repository.saveStudent(student);
     }
 
@@ -29,7 +37,7 @@ public class InMemoryStudentServiceImpl implements StudentService {
     }
 
     @Override
-    public Student findById(Integer id) {
+    public Optional<Student> findById(Long id) {
         return repository.findById(id);
     }
 
@@ -38,8 +46,14 @@ public class InMemoryStudentServiceImpl implements StudentService {
         return repository.updateStudent(student);
     }
 
+//    @Override
+//    public boolean deleteStudent(Long id) {
+//        return repository.deleteStudent(id);
+//    }
+
     @Override
-    public boolean deleteStudent(Integer id) {
-        return repository.deleteStudent(id);
+    @Transactional
+    public void deleteStudent(Long id) {
+        repository.deleteStudent(id);
     }
 }
