@@ -24,5 +24,5 @@
 **Технологии**
 1) Backend - Java Spring Boot
 2) Frontend - ещё не выбран
-3) Базы данных - ещё не выбран
-4) Сборка - Maven
+3) Базы данных - PostgreSQL (PGAdmin 4)
+4) Сборка - Gradlew
