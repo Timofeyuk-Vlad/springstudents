@@ -23,93 +23,103 @@ import ru.kors.springstudents.service.StudentService;
 @AllArgsConstructor
 public class StudentController {
 
-  private final StudentService service;
+    private final StudentService service;
 
-  @GetMapping
-  public List<Student> findAllStudent() {
-    return service.findAllStudent();
-  }
+    @GetMapping
+    public List<Student> findAllStudent() {
+        return service.findAllStudent();
+    }
 
-  @PostMapping("save_student")
-  public Student saveStudent(@RequestBody Student student) {
-    if (student == null) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Студент не может быть null");
-    }
-    if (student.getEmail() == null || student.getEmail().trim().isEmpty()) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email не может быть пустым");
-    }
-    // Проверка на уникальность email
-    Student existingStudent = service.findByEmail(student.getEmail());
-    if (existingStudent != null) {
-      throw new ResponseStatusException(HttpStatus.CONFLICT, "Студент с email " + student.getEmail() + " уже существует");
-    }
-    return service.saveStudent(student);
-  }
+    @PostMapping("save_student")
+    public Student saveStudent(@RequestBody Student student) {
+        if (student == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Студент не может быть null");
+        }
+        if (student.getEmail() == null || student.getEmail().trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email не может быть пустым");
+        }
 
-  @GetMapping("/email/{email}")
-  public Student findByEmail(@PathVariable String email) {
-    if (email == null || email.trim().isEmpty()) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email не может быть пустым");
+        Student existingStudent = service.findByEmail(student.getEmail());
+        if (existingStudent != null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Студент с email "
+                + student.getEmail() + " уже существует");
+        }
+        return service.saveStudent(student);
     }
-    Student student = service.findByEmail(email);
-    if (student == null) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Студент с email " + email + " не найден");
-    }
-    return student;
-  }
 
-  @GetMapping("/{id}")
-  public Student findById(@PathVariable Long id) {
-    return service.findById(id)
+    @GetMapping("/email/{email}")
+    public Student findByEmail(@PathVariable String email) {
+        if (email == null || email.trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Email не может быть пустым");
+        }
+        Student student = service.findByEmail(email);
+        if (student == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                "Студент с email " + email + " не найден");
+        }
+        return student;
+    }
+
+    @GetMapping("/{id}")
+    public Student findById(@PathVariable Long id) {
+        return service.findById(id)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
         "Студент с id " + id + " не найден"));
-  }
+    }
 
-  @GetMapping("/search")
-  public Student findStudent(@RequestParam(required = false) String email) {
-    if (email == null || email.trim().isEmpty()) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email не может быть пустым");
+    @GetMapping("/search")
+    public Student findStudent(@RequestParam(required = false) String email) {
+        if (email == null || email.trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Email не может быть пустым");
+        }
+        Student student = service.findByEmail(email);
+        if (student == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                "Студент с email " + email + " не найден");
+        }
+        return student;
     }
-    Student student = service.findByEmail(email);
-    if (student == null) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Студент с email " + email + " не найден");
-    }
-    return student;
-  }
 
-  @PutMapping("update_student")
-  public Student updateStudent(@RequestBody Student student) {
-    if (student == null) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Студент не может быть null");
-    }
-    if (student.getId() == null) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID студента не может быть null");
-    }
-    // Проверка на существование студента перед обновлением
-    Optional<Student> existingStudent = service.findById(student.getId());
-    if (existingStudent.isEmpty()) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Студент с id " + student.getId() + " не найден");
-    }
-    // Проверка на уникальность email, если он изменен
-    if (!existingStudent.get().getEmail().equals(student.getEmail())) {
-      Student studentWithNewEmail = service.findByEmail(student.getEmail());
-      if (studentWithNewEmail != null) {
-        throw new ResponseStatusException(HttpStatus.CONFLICT, "Студент с email " + student.getEmail() + " уже существует");
-      }
-    }
-    return service.updateStudent(student);
-  }
+    @PutMapping("update_student")
+    public Student updateStudent(@RequestBody Student student) {
+        if (student == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Студент не может быть null");
+        }
+        if (student.getId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "ID студента не может быть null");
+        }
 
-  @DeleteMapping("delete_student/{id}")
-  public void deleteStudent(@PathVariable Long id) {
-    if (id == null) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID не может быть null");
+        Optional<Student> existingStudent = service.findById(student.getId());
+        if (existingStudent.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+            "Студент с id " + student.getId() + " не найден");
+        }
+
+        if (!existingStudent.get().getEmail().equals(student.getEmail())) {
+            Student studentWithNewEmail = service.findByEmail(student.getEmail());
+            if (studentWithNewEmail != null) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                "Студент с email " + student.getEmail() + " уже существует");
+            }
+        }
+        return service.updateStudent(student);
     }
-    // Проверка на существование студента перед удалением
-    Optional<Student> existingStudent = service.findById(id);
-    if (existingStudent.isEmpty()) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Студент с id " + id + " не найден");
+
+    @DeleteMapping("delete_student/{id}")
+    public void deleteStudent(@PathVariable Long id) {
+        if (id == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID не может быть null");
+        }
+
+        Optional<Student> existingStudent = service.findById(id);
+        if (existingStudent.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                "Студент с id " + id + " не найден");
+        }
+        service.deleteStudent(id);
     }
-    service.deleteStudent(id);
-  }
 }

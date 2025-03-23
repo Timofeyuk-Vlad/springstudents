@@ -21,11 +21,6 @@ public class InMemoryStudentServiceImpl implements StudentService {
         return repository.findAllStudent();
     }
 
-//    @Override
-//    public boolean saveStudent(Student student) {
-//        return repository.saveStudent(student);
-//    }
-
     @Override
     public Student saveStudent(Student student) {
         return repository.saveStudent(student);
@@ -45,11 +40,6 @@ public class InMemoryStudentServiceImpl implements StudentService {
     public Student updateStudent(Student student) {
         return repository.updateStudent(student);
     }
-
-//    @Override
-//    public boolean deleteStudent(Long id) {
-//        return repository.deleteStudent(id);
-//    }
 
     @Override
     @Transactional
