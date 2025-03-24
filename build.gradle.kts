@@ -13,7 +13,7 @@ group = "ru.kors"
 version = "0.0.1-SNAPSHOT"
 
 jacoco {
-	toolVersion = "0.8.8"
+	toolVersion = "0.8.11"
 }
 
 java {
