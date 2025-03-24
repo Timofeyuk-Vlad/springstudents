@@ -26,6 +26,8 @@ bin/
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+src/main/java/ru/kors/springstudents/service/impl/InMemoryStudentServiceImpl.java
+src/main/java/ru/kors/springstudents/service/impl/InMemoryStudentDao.java
 
 ### NetBeans ###
 /nbproject/private/
