@@ -1,17 +1,19 @@
 package ru.kors.springstudents.service;
 
-import ru.kors.springstudents.model.Barter;
+import ru.kors.springstudents.dto.BarterDto;
+import ru.kors.springstudents.dto.CreateBarterRequestDto;
+// import ru.kors.springstudents.dto.UpdateBarterRequestDTO;
 
 import java.util.List;
 
-public interface BarterService {
-    List<Barter> findAllBarters();
+public interface BarterService { // Убедись, что имя интерфейса правильное
+    List<BarterDto> findAllBarters();
 
-    Barter saveBarter(Barter barter);
+    BarterDto saveBarter(CreateBarterRequestDto barterDto);
 
-    Barter findBarterById(Long id);
+    BarterDto findBarterById(Long id);
 
-    Barter updateBarter(Barter barter);
+    BarterDto updateBarter(Long id, CreateBarterRequestDto barterDto);
 
     void deleteBarter(Long id);
 }

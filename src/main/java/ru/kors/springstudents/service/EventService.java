@@ -1,17 +1,19 @@
 package ru.kors.springstudents.service;
 
-import ru.kors.springstudents.model.Event;
+import ru.kors.springstudents.dto.CreateEventRequestDto;
+import ru.kors.springstudents.dto.EventDto;
+// import ru.kors.springstudents.dto.UpdateEventRequestDto;
 
 import java.util.List;
 
 public interface EventService {
-    List<Event> findAllEvents();
+    List<EventDto> findAllEvents();
 
-    Event saveEvent(Event event);
+    EventDto saveEvent(CreateEventRequestDto eventDto);
 
-    Event findEventById(Long id);
+    EventDto findEventById(Long id);
 
-    Event updateEvent(Event event);
+    EventDto updateEvent(Long id, CreateEventRequestDto eventDto);
 
     void deleteEvent(Long id);
 }

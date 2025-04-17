@@ -1,47 +1,56 @@
 package ru.kors.springstudents.controller;
 
-import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
-import ru.kors.springstudents.model.Event;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import ru.kors.springstudents.dto.CreateEventRequestDto;
+import ru.kors.springstudents.dto.EventDto;
 import ru.kors.springstudents.service.EventService;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/events")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class EventController {
+
     private final EventService service;
 
     @GetMapping
-    public List<Event> findAllEvents() {
-        return service.findAllEvents();
+    public ResponseEntity<List<EventDto>> findAllEvents() {
+        return ResponseEntity.ok(service.findAllEvents());
     }
 
     @PostMapping
-    public Event saveEvent(@RequestBody Event event) {
-        return service.saveEvent(event);
+    public ResponseEntity<EventDto> saveEvent(@Valid @RequestBody CreateEventRequestDto eventDto) {
+        EventDto savedEvent = service.saveEvent(eventDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedEvent);
     }
 
     @GetMapping("/{id}")
-    public Event findEventById(@PathVariable Long id) {
-        return service.findEventById(id);
+    public ResponseEntity<EventDto> findEventById(@PathVariable Long id) {
+        return ResponseEntity.ok(service.findEventById(id));
     }
 
-    @PutMapping
-    public Event updateEvent(@RequestBody Event event) {
-        return service.updateEvent(event);
+    @PutMapping("/{id}")
+    public ResponseEntity<EventDto> updateEvent(@PathVariable Long id,
+                                                @Valid @RequestBody
+                                                CreateEventRequestDto eventDto) {
+        return ResponseEntity.ok(service.updateEvent(id, eventDto));
     }
 
     @DeleteMapping("/{id}")
-    public void deleteEvent(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteEvent(@PathVariable Long id) {
         service.deleteEvent(id);
+        return ResponseEntity.noContent().build();
     }
 }

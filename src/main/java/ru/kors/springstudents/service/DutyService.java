@@ -1,17 +1,19 @@
 package ru.kors.springstudents.service;
 
-import ru.kors.springstudents.model.Duty;
+import ru.kors.springstudents.dto.CreateDutyRequestDto;
+import ru.kors.springstudents.dto.DutyDto;
+// import ru.kors.springstudents.dto.UpdateDutyRequestDTO;
 
 import java.util.List;
 
 public interface DutyService {
-    List<Duty> findAllDuties();
+    List<DutyDto> findAllDuties();
 
-    Duty saveDuty(Duty duty);
+    DutyDto saveDuty(CreateDutyRequestDto dutyDto);
 
-    Duty findDutyById(Long id);
+    DutyDto findDutyById(Long id); // Бросает исключение, если не найден
 
-    Duty updateDuty(Duty duty);
+    DutyDto updateDuty(Long id, CreateDutyRequestDto dutyDto); // Или UpdateDTO, бросает исключение
 
-    void deleteDuty(Long id);
+    void deleteDuty(Long id); // Бросает исключение, если не найден
 }

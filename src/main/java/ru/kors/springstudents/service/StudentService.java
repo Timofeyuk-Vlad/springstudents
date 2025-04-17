@@ -1,20 +1,22 @@
 package ru.kors.springstudents.service;
 
-import java.util.List;
-import java.util.Optional;
+import ru.kors.springstudents.dto.CreateStudentRequestDto;
+import ru.kors.springstudents.dto.StudentDto;
+import ru.kors.springstudents.dto.UpdateStudentRequestDto;
 
-import ru.kors.springstudents.model.Student;
+import java.util.List;
 
 public interface StudentService {
-    List<Student> findAllStudent();
+    List<StudentDto> findAllStudent();
 
-    Student saveStudent(Student student);
+    StudentDto saveStudent(CreateStudentRequestDto studentDto);
 
-    Student findByEmail(String email);
+    StudentDto findDtoByEmail(String email); // Бросает исключение, если не найден
 
-    Optional<Student> findById(Long id);
+    StudentDto findDtoById(Long id); // Бросает исключение, если не найден
 
-    Student updateStudent(Student student);
+    StudentDto updateStudent(Long id, UpdateStudentRequestDto studentDto); // Бросает исключение
 
-    void deleteStudent(Long id);
+    void deleteStudent(Long id); // Бросает исключение, если не найден
+
 }

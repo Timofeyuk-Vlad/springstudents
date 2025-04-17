@@ -1,17 +1,18 @@
 package ru.kors.springstudents.service;
 
-import ru.kors.springstudents.model.Admin;
+import ru.kors.springstudents.dto.AdminDto; // Используем DTO
 
 import java.util.List;
 
 public interface AdminService {
-    List<Admin> findAllAdmins();
 
-    Admin saveAdmin(Admin admin);
+    List<AdminDto> findAllAdmins();
 
-    Admin findAdminById(Long id);
+    AdminDto saveAdmin(AdminDto adminDto); // Принимаем DTO (или CreateAdminDto)
 
-    Admin updateAdmin(Admin admin);
+    AdminDto findAdminById(Long id);
+
+    AdminDto updateAdmin(Long id, AdminDto adminDto); // Принимаем ID и DTO (или UpdateAdminDto)
 
     void deleteAdmin(Long id);
 }
