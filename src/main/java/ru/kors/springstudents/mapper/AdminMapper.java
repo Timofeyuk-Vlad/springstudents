@@ -1,9 +1,9 @@
 package ru.kors.springstudents.mapper;
 
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import ru.kors.springstudents.dto.AdminDto;
-// Импортируй DTO для создания/обновления, если они есть
 import ru.kors.springstudents.model.Admin;
 
 import java.util.List;
@@ -14,8 +14,9 @@ public interface AdminMapper {
 
     List<AdminDto> toDtoList(List<Admin> admins);
 
-    Admin toEntity(AdminDto dto); // Или из CreateAdminRequestDTO
+    Admin toEntity(AdminDto dto);
 
+    @Mapping(target = "id", ignore = true)
     void updateEntityFromDto(AdminDto dto, @MappingTarget Admin admin);
     // Или из UpdateAdminRequestDTO
 }

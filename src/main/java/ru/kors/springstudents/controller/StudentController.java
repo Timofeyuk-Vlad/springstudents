@@ -38,7 +38,7 @@ public class StudentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedStudent);
     }
 
-    @GetMapping("/by-email/{email}")
+    @GetMapping("/email/{email}")
     public ResponseEntity<StudentDto> findByEmail(@PathVariable String email) {
         return ResponseEntity.ok(service.findDtoByEmail(email));
     }
