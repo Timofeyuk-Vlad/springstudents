@@ -8,6 +8,6 @@ public class BarterDto {
     private String item;
     private String description;
     private String status;
-    private Long studentId; // ID студента вместо полного объекта
-    private String studentFullName; // Можно добавить для удобства отображения
+    private Long studentId; // Оставляем только ID
+    // private String studentFullName;
 }

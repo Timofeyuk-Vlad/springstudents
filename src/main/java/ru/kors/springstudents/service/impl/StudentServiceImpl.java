@@ -4,9 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.kors.springstudents.dto.CreateStudentRequestDto;
-import ru.kors.springstudents.dto.StudentDto;
-import ru.kors.springstudents.dto.UpdateStudentRequestDto;
+import ru.kors.springstudents.dto.*; // Импорт всех DTO
 import ru.kors.springstudents.exception.ResourceNotFoundException;
 import ru.kors.springstudents.mapper.StudentMapper;
 import ru.kors.springstudents.model.Student;
@@ -21,71 +19,78 @@ import java.util.List;
 @Transactional
 public class StudentServiceImpl implements StudentService {
 
+    // --- Константы для сообщений ---
+    private static final String STUDENT_NOT_FOUND_BY_ID_MSG = "Student with id %d not found";
+    private static final String STUDENT_NOT_FOUND_BY_EMAIL_MSG = "Student with email %s not found";
+    private static final String EMAIL_EXISTS_MSG = "Student with email %s already exists.";
+    private static final String OTHER_EMAIL_EXISTS_MSG = "Another student with email %s already exists.";
+    // --------------------------------
+
     private final StudentRepository repository;
     private final StudentMapper mapper;
 
     @Override
     @Transactional(readOnly = true)
-    public List<StudentDto> findAllStudent() {
-        List<Student> students = repository.findAll();
-        return mapper.toDtoList(students);
+    public List<StudentSummaryDto> findAllStudentsSummary() {
+        List<Student> students = repository.findAll(); // Загружаем без деталей
+        return mapper.toSummaryDtoList(students);
     }
 
     @Override
-    public StudentDto saveStudent(CreateStudentRequestDto studentDto) {
+    @Transactional(readOnly = true)
+    public StudentDetailsDto findStudentDetailsById(Long id) {
+        // Используем findById, который с @EntityGraph загрузит все связи
+        return repository.findById(id)
+            .map(mapper::toDetailsDto) // Маппим в детальный DTO
+            .orElseThrow(() -> new ResourceNotFoundException(String.format(STUDENT_NOT_FOUND_BY_ID_MSG, id)));
+    }
+
+    @Override
+    public StudentDetailsDto saveStudent(CreateStudentRequestDto studentDto) {
         if (repository.findStudentByEmail(studentDto.getEmail()) != null) {
-            throw new IllegalArgumentException("Student with email "
-                + studentDto.getEmail() + " already exists.");
+            throw new IllegalArgumentException(String.format(EMAIL_EXISTS_MSG, studentDto.getEmail()));
         }
         Student student = mapper.toEntity(studentDto);
         Student savedStudent = repository.save(student);
-        return mapper.toDto(savedStudent);
+        // После сохранения загружаем снова с деталями (findById использует @EntityGraph)
+        // или маппим то, что есть, но коллекции будут пустыми, если нет каскадного сохранения
+        // Лучше перезагрузить, чтобы получить актуальные данные связей, если они важны сразу
+        return findStudentDetailsById(savedStudent.getId());
+        // Альтернатива (если связи не важны сразу): return mapper.toDetailsDto(savedStudent);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public StudentDto findDtoByEmail(String email) {
+    public StudentDetailsDto findDtoByEmail(String email) { // Возвращаем детали
         Student student = repository.findStudentByEmail(email);
         if (student == null) {
-            throw new ResourceNotFoundException("Student with email " + email + " not found");
+            throw new ResourceNotFoundException(String.format(STUDENT_NOT_FOUND_BY_EMAIL_MSG, email));
         }
-        return mapper.toDto(student);
+        // Перезагружаем с деталями, т.к. findStudentByEmail не грузит связи
+        return findStudentDetailsById(student.getId());
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public StudentDto findDtoById(Long id) {
-        Student student = findStudentEntityById(id);
-        return mapper.toDto(student);
-    }
+    public StudentDetailsDto updateStudent(Long id, UpdateStudentRequestDto studentDto) {
+        Student existingStudent = repository.findById(id) // findById загрузит все связи
+            .orElseThrow(() -> new ResourceNotFoundException(String.format(STUDENT_NOT_FOUND_BY_ID_MSG, id)));
 
-    @Override
-    public StudentDto updateStudent(Long id, UpdateStudentRequestDto studentDto) {
-        Student existingStudent = findStudentEntityById(id);
-
-        if (!existingStudent.getEmail().equals(studentDto.getEmail())
-            && repository.findStudentByEmail(studentDto.getEmail()) != null) {
-            throw new IllegalArgumentException("Another student with email "
-                + studentDto.getEmail() + " already exists.");
+        if (!existingStudent.getEmail().equals(studentDto.getEmail()) &&
+            repository.findStudentByEmail(studentDto.getEmail()) != null) {
+            throw new IllegalArgumentException(String.format(OTHER_EMAIL_EXISTS_MSG, studentDto.getEmail()));
         }
 
         mapper.updateEntityFromDto(studentDto, existingStudent);
-
         Student updatedStudent = repository.save(existingStudent);
-        return mapper.toDto(updatedStudent);
+        // Маппим уже обновленную сущность со всеми подгруженными связями
+        return mapper.toDetailsDto(updatedStudent);
     }
 
     @Override
     public void deleteStudent(Long id) {
         if (!repository.existsById(id)) {
-            throw new ResourceNotFoundException("Student with id " + id + " not found");
+            throw new ResourceNotFoundException(String.format(STUDENT_NOT_FOUND_BY_ID_MSG, id));
         }
         repository.deleteById(id);
-    }
-
-    private Student findStudentEntityById(Long id) {
-        return repository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Student with id "
-                + id + " not found"));
     }
 }

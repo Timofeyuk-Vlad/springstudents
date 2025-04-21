@@ -4,17 +4,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import ru.kors.springstudents.dto.CreateStudentRequestDto;
-import ru.kors.springstudents.dto.StudentDto;
-import ru.kors.springstudents.dto.UpdateStudentRequestDto;
+import org.springframework.web.bind.annotation.*;
+import ru.kors.springstudents.dto.*; // Импорт всех DTO
 import ru.kors.springstudents.service.StudentService;
 
 import java.util.List;
@@ -26,30 +17,30 @@ public class StudentController {
 
     private final StudentService service;
 
-    @GetMapping
-    public ResponseEntity<List<StudentDto>> findAllStudents() {
-        return ResponseEntity.ok(service.findAllStudent());
+    @GetMapping // Возвращает краткий список
+    public ResponseEntity<List<StudentSummaryDto>> findAllStudents() {
+        return ResponseEntity.ok(service.findAllStudentsSummary());
     }
 
-    @PostMapping("/save_student")
-    public ResponseEntity<StudentDto> saveStudent(
+    @PostMapping // Создает и возвращает детали
+    public ResponseEntity<StudentDetailsDto> saveStudent(
         @Valid @RequestBody CreateStudentRequestDto studentRequest) {
-        StudentDto savedStudent = service.saveStudent(studentRequest);
+        StudentDetailsDto savedStudent = service.saveStudent(studentRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedStudent);
     }
 
-    @GetMapping("/email/{email}")
-    public ResponseEntity<StudentDto> findByEmail(@PathVariable String email) {
+    @GetMapping("/email/{email}") // Возвращает детали
+    public ResponseEntity<StudentDetailsDto> findByEmail(@PathVariable String email) {
         return ResponseEntity.ok(service.findDtoByEmail(email));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<StudentDto> findById(@PathVariable Long id) {
-        return ResponseEntity.ok(service.findDtoById(id));
+    @GetMapping("/{id}") // Возвращает детали
+    public ResponseEntity<StudentDetailsDto> findById(@PathVariable Long id) {
+        return ResponseEntity.ok(service.findStudentDetailsById(id));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<StudentDto> updateStudent(
+    @PutMapping("/{id}") // Обновляет и возвращает детали
+    public ResponseEntity<StudentDetailsDto> updateStudent(
         @PathVariable Long id,
         @Valid @RequestBody UpdateStudentRequestDto studentRequest) {
         return ResponseEntity.ok(service.updateStudent(id, studentRequest));

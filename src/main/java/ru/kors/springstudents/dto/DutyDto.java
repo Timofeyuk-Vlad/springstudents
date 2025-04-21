@@ -7,6 +7,6 @@ import java.time.LocalDate;
 public class DutyDto {
     private Long id;
     private LocalDate date;
-    private Long studentId;
-    private String studentFullName;
+    private Long studentId;// Оставляем только ID
+    // private String studentFullName;
 }

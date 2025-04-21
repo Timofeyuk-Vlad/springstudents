@@ -1,17 +1,28 @@
 package ru.kors.springstudents.model;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
-import lombok.Data;
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString(exclude = {"author"}) // Исключаем author (Student)
+@EqualsAndHashCode(of = "id")
 @Entity
 @Table(name = "forum_posts")
 public class ForumPost {
@@ -23,7 +34,7 @@ public class ForumPost {
     private String content;
     private LocalDateTime createdAt;
 
-    @ManyToOne
-    @JoinColumn(name = "student_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "student_id", nullable = false) // Предполагаем, что колонка называется student_id
     private Student author;
 }
