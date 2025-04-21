@@ -1,10 +1,15 @@
 package ru.kors.springstudents.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired; // <-- Добавь импорт
+import org.springframework.context.annotation.Lazy; // <-- Добавь импорт (для сеттера)
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.kors.springstudents.dto.*; // Импорт всех DTO
+import ru.kors.springstudents.dto.CreateStudentRequestDto;
+import ru.kors.springstudents.dto.StudentDetailsDto;
+import ru.kors.springstudents.dto.StudentSummaryDto;
+import ru.kors.springstudents.dto.UpdateStudentRequestDto;
 import ru.kors.springstudents.exception.ResourceNotFoundException;
 import ru.kors.springstudents.mapper.StudentMapper;
 import ru.kors.springstudents.model.Student;
@@ -12,9 +17,10 @@ import ru.kors.springstudents.repository.StudentRepository;
 import ru.kors.springstudents.service.StudentService;
 
 import java.util.List;
+import java.util.stream.Collectors; // Нужен для join в сообщениях
 
 @Service
-@RequiredArgsConstructor
+@RequiredArgsConstructor // Оставляем для final полей
 @Primary
 @Transactional
 public class StudentServiceImpl implements StudentService {
@@ -29,19 +35,29 @@ public class StudentServiceImpl implements StudentService {
     private final StudentRepository repository;
     private final StudentMapper mapper;
 
+    // --- Поле для self-инъекции ---
+    private StudentService self;
+
+    // --- Сеттер для self-инъекции (Spring использует его для внедрения прокси) ---
+    @Autowired
+    @Lazy // Используем @Lazy, чтобы избежать проблем с циклом при создании бина
+    public void setSelf(StudentService self) {
+        this.self = self;
+    }
+    // ---------------------------------------------------------------------------
+
     @Override
     @Transactional(readOnly = true)
     public List<StudentSummaryDto> findAllStudentsSummary() {
-        List<Student> students = repository.findAll(); // Загружаем без деталей
+        List<Student> students = repository.findAll();
         return mapper.toSummaryDtoList(students);
     }
 
     @Override
     @Transactional(readOnly = true)
     public StudentDetailsDto findStudentDetailsById(Long id) {
-        // Используем findById, который с @EntityGraph загрузит все связи
         return repository.findById(id)
-            .map(mapper::toDetailsDto) // Маппим в детальный DTO
+            .map(mapper::toDetailsDto)
             .orElseThrow(() -> new ResourceNotFoundException(String.format(STUDENT_NOT_FOUND_BY_ID_MSG, id)));
     }
 
@@ -52,27 +68,25 @@ public class StudentServiceImpl implements StudentService {
         }
         Student student = mapper.toEntity(studentDto);
         Student savedStudent = repository.save(student);
-        // После сохранения загружаем снова с деталями (findById использует @EntityGraph)
-        // или маппим то, что есть, но коллекции будут пустыми, если нет каскадного сохранения
-        // Лучше перезагрузить, чтобы получить актуальные данные связей, если они важны сразу
-        return findStudentDetailsById(savedStudent.getId());
-        // Альтернатива (если связи не важны сразу): return mapper.toDetailsDto(savedStudent);
+        // Вызываем через прокси (self), если findStudentDetailsById транзакционный
+        return self.findStudentDetailsById(savedStudent.getId());
     }
 
     @Override
     @Transactional(readOnly = true)
-    public StudentDetailsDto findDtoByEmail(String email) { // Возвращаем детали
+    public StudentDetailsDto findDtoByEmail(String email) {
         Student student = repository.findStudentByEmail(email);
         if (student == null) {
             throw new ResourceNotFoundException(String.format(STUDENT_NOT_FOUND_BY_EMAIL_MSG, email));
         }
-        // Перезагружаем с деталями, т.к. findStudentByEmail не грузит связи
-        return findStudentDetailsById(student.getId());
+        // Вызываем через прокси (self), чтобы гарантировать @Transactional(readOnly=true) для внутреннего вызова
+        return self.findStudentDetailsById(student.getId());
     }
 
     @Override
     public StudentDetailsDto updateStudent(Long id, UpdateStudentRequestDto studentDto) {
-        Student existingStudent = repository.findById(id) // findById загрузит все связи
+        // Здесь findById уже использует @EntityGraph, вызываем его напрямую
+        Student existingStudent = repository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException(String.format(STUDENT_NOT_FOUND_BY_ID_MSG, id)));
 
         if (!existingStudent.getEmail().equals(studentDto.getEmail()) &&
@@ -81,8 +95,9 @@ public class StudentServiceImpl implements StudentService {
         }
 
         mapper.updateEntityFromDto(studentDto, existingStudent);
+        // save сам по себе транзакционный, не нужно вызывать через self
         Student updatedStudent = repository.save(existingStudent);
-        // Маппим уже обновленную сущность со всеми подгруженными связями
+        // Маппим уже обновленную сущность
         return mapper.toDetailsDto(updatedStudent);
     }
 

@@ -47,29 +47,29 @@ repositories {
 }
 
 dependencies {
-	// Spring Boot Starters
+	// Spring Boot Starters (implementation)
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
-	// Lombok
+	// MapStruct (implementation)
+	implementation("org.mapstruct:mapstruct:1.5.5.Final")
+
+	// Lombok (compileOnly & annotationProcessor)
 	compileOnly("org.projectlombok:lombok:1.18.36")
 	annotationProcessor("org.projectlombok:lombok:1.18.36")
 
-	testRuntimeOnly("com.h2database:h2")
-
-	// MapStruct
-	implementation("org.mapstruct:mapstruct:1.5.5.Final")
+	// MapStruct Processor & Binding (annotationProcessor)
 	annotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
 	annotationProcessor("org.projectlombok:lombok-mapstruct-binding:0.2.0")
 
-	// База данных
+	// База данных (runtimeOnly)
 	runtimeOnly("org.postgresql:postgresql")
 
-	// DevTools
+	// DevTools (developmentOnly)
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 
-	// Тестирование
+	// Тестирование (testImplementation & testRuntimeOnly)
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.junit.jupiter:junit-jupiter-api")
 	testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
