@@ -6,20 +6,19 @@ plugins {
 	id("org.springframework.boot") version "3.4.3"
 	id("io.spring.dependency-management") version "1.1.7"
 
-	// Оставляем закомментированными пока
-	// checkstyle
-	// id("org.sonarqube") version "6.0.1.5171"
-	// id("jacoco")
+
+	 checkstyle
+	 id("org.sonarqube") version "6.0.1.5171"
+	 id("jacoco")
 }
 
 group = "ru.kors"
 version = "0.0.1-SNAPSHOT"
 
-/* // Оставляем закомментированным
+
 jacoco {
     toolVersion = "0.8.11"
 }
-*/
 
 java {
 	toolchain {
@@ -27,13 +26,13 @@ java {
 	}
 }
 
-/* // Оставляем закомментированным
+ // Оставляем закомментированным
 checkstyle {
     toolVersion = "10.21.2"
 }
-*/
 
-/* // Оставляем закомментированным
+
+ // Оставляем закомментированным
 sonarqube {
     properties {
         property("sonar.projectKey", "Timofeyuk-Vlad_springstudents")
@@ -41,7 +40,7 @@ sonarqube {
         property("sonar.host.url", "https://sonarcloud.io")
     }
 }
-*/
+
 
 repositories {
 	mavenCentral()
@@ -84,9 +83,18 @@ tasks.withType<Test> {
 		exceptionFormat = TestExceptionFormat.FULL
 		showStandardStreams = true
 	}
+	finalizedBy(tasks.named("jacocoTestReport"))
 }
 
-// Конфигурация MapStruct - оставляем
+tasks.named<JacocoReport>("jacocoTestReport") {
+	dependsOn(tasks.named("test"))
+	reports {
+		xml.required.set(true) // XML отчет нужен для SonarQube
+		html.required.set(true) // HTML для локального просмотра
+	}
+}
+
+
 tasks.withType<JavaCompile>().configureEach {
 	options.compilerArgs.add("-Amapstruct.defaultComponentModel=spring")
 }
