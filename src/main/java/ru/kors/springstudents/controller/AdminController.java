@@ -1,6 +1,5 @@
 package ru.kors.springstudents.controller;
 
-import jakarta.validation.Valid; // Если есть DTO для валидации
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
