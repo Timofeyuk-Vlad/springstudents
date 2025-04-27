@@ -3,10 +3,9 @@ package ru.kors.springstudents.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
-import ru.kors.springstudents.dto.CreateRequestDto; // camelCase
-import ru.kors.springstudents.dto.RequestDto;       // camelCase
+import ru.kors.springstudents.dto.CreateRequestDto;
+import ru.kors.springstudents.dto.RequestDto;
 import ru.kors.springstudents.model.Request;
-// import ru.kors.springstudents.model.Student;
 
 import java.util.List;
 

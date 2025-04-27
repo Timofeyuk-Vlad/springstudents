@@ -84,8 +84,6 @@ public class GlobalExceptionHandler {
                 request.getDescription(false).replace("uri=", ""),
                 null
         );
-        // Важно: логировать реальный stack trace для отладки
-        // log.error("Unexpected error", ex);
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

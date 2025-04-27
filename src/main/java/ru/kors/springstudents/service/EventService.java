@@ -2,7 +2,6 @@ package ru.kors.springstudents.service;
 
 import ru.kors.springstudents.dto.CreateEventRequestDto;
 import ru.kors.springstudents.dto.EventDto;
-// import ru.kors.springstudents.dto.UpdateEventRequestDto;
 
 import java.util.List;
 

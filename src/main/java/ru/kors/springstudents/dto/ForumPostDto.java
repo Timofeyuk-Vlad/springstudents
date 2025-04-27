@@ -9,6 +9,5 @@ public class ForumPostDto {
     private String title;
     private String content;
     private LocalDateTime createdAt;
-    private Long authorId;// Оставляем только ID
-    // private String studentFullName;
+    private Long authorId;
 }

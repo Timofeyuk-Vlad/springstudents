@@ -2,7 +2,6 @@ package ru.kors.springstudents.service;
 
 import ru.kors.springstudents.dto.BarterDto;
 import ru.kors.springstudents.dto.CreateBarterRequestDto;
-// import ru.kors.springstudents.dto.UpdateBarterRequestDTO;
 
 import java.util.List;
 

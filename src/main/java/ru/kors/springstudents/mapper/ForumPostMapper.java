@@ -3,10 +3,9 @@ package ru.kors.springstudents.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
-import ru.kors.springstudents.dto.CreateForumPostRequestDto; // camelCase
-import ru.kors.springstudents.dto.ForumPostDto;             // camelCase
+import ru.kors.springstudents.dto.CreateForumPostRequestDto;
+import ru.kors.springstudents.dto.ForumPostDto;
 import ru.kors.springstudents.model.ForumPost;
-// import ru.kors.springstudents.model.Student;
 
 import java.util.List;
 

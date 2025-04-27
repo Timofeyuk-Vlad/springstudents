@@ -2,7 +2,6 @@ package ru.kors.springstudents.service;
 
 import ru.kors.springstudents.dto.CreateDutyRequestDto;
 import ru.kors.springstudents.dto.DutyDto;
-// import ru.kors.springstudents.dto.UpdateDutyRequestDTO;
 
 import java.util.List;
 

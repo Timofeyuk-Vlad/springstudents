@@ -9,8 +9,6 @@ import java.time.LocalDate;
 
 @Data
 public class UpdateStudentRequestDto {
-    // ID обычно передается в URL, но можно и здесь для сверки
-    // private Long id;
 
     @NotBlank(message = "First name cannot be blank")
     private String firstName;

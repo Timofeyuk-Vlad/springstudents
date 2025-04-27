@@ -16,8 +16,4 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     @Override
     @EntityGraph(attributePaths = {"requests", "events", "duties", "forumPosts", "barters"})
     Optional<Student> findById(@NonNull Long id);
-
-    // Метод для получения краткого списка (без JOIN FETCH)
-    // Стандартный findAll() подойдет, или можно сделать проекцию, если нужно оптимизировать
-    // List<Student> findAll();
 }

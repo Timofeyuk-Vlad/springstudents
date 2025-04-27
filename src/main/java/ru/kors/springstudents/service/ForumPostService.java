@@ -2,7 +2,6 @@ package ru.kors.springstudents.service;
 
 import ru.kors.springstudents.dto.CreateForumPostRequestDto;
 import ru.kors.springstudents.dto.ForumPostDto;
-// import ru.kors.springstudents.dto.UpdateForumPostRequestDTO;
 
 import java.util.List;
 

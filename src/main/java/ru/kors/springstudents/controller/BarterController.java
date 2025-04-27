@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import ru.kors.springstudents.dto.BarterDto;
 import ru.kors.springstudents.dto.CreateBarterRequestDto;
-// import ru.kors.springstudents.dto.UpdateBarterRequestDTO;
 import ru.kors.springstudents.service.BarterService;
 
 import java.util.List;

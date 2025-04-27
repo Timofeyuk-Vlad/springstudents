@@ -10,6 +10,5 @@ public class RequestDto {
     private String description;
     private String status;
     private LocalDateTime createdAt;
-    private Long studentId; // Оставляем только ID
-    // private String studentFullName;
+    private Long studentId;
 }
