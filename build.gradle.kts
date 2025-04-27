@@ -57,9 +57,14 @@ dependencies {
 
 	runtimeOnly("org.postgresql:postgresql")
 
-	//testRuntimeOnly("com.h2database:h2") // Оставляем H2 для тестов
+	testRuntimeOnly("com.h2database:h2") // Оставляем H2 для тестов
 
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
+
+	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("org.junit.jupiter:junit-jupiter-api")
+	testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 
