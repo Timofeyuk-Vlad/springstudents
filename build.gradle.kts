@@ -46,7 +46,6 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-
 	implementation("org.mapstruct:mapstruct:1.5.5.Final")
 
 	compileOnly("org.projectlombok:lombok:1.18.36")
@@ -57,12 +56,12 @@ dependencies {
 
 	runtimeOnly("org.postgresql:postgresql")
 
-	testRuntimeOnly("com.h2database:h2") // Оставляем H2 для тестов
-
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.junit.jupiter:junit-jupiter-api")
+
+	testRuntimeOnly("com.h2database:h2")
 	testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
