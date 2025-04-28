@@ -11,7 +11,7 @@ import java.util.Optional;
 @Repository
 public interface StudentRepository extends JpaRepository<Student, Long> {
 
-    Student findStudentByEmail(@NonNull String email); // Оставляем для проверок
+    Student findStudentByEmail(@NonNull String email);
 
     @Override
     @EntityGraph(attributePaths = {"requests", "events", "duties", "forumPosts", "barters"})

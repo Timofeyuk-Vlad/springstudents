@@ -1,22 +1,22 @@
 package ru.kors.springstudents.service;
 
 import ru.kors.springstudents.dto.CreateStudentRequestDto;
-import ru.kors.springstudents.dto.StudentDetailsDto; // Детали
-import ru.kors.springstudents.dto.StudentSummaryDto; // Сводка
+import ru.kors.springstudents.dto.StudentDetailsDto;
+import ru.kors.springstudents.dto.StudentSummaryDto;
 import ru.kors.springstudents.dto.UpdateStudentRequestDto;
 
 import java.util.List;
 
 public interface StudentService {
-    List<StudentSummaryDto> findAllStudentsSummary(); // Метод для списка
+    List<StudentSummaryDto> findAllStudentsSummary();
 
-    StudentDetailsDto findStudentDetailsById(Long id); // Метод для деталей
+    StudentDetailsDto findStudentDetailsById(Long id);
 
-    StudentDetailsDto saveStudent(CreateStudentRequestDto studentDto); // Возвращаем детали после создания
+    StudentDetailsDto saveStudent(CreateStudentRequestDto studentDto);
 
-    StudentDetailsDto findDtoByEmail(String email); // Возможно, тоже детали? Или Summary? Реши сам.
+    StudentDetailsDto findDtoByEmail(String email);
 
-    StudentDetailsDto updateStudent(Long id, UpdateStudentRequestDto studentDto); // Возвращаем детали после обновления
+    StudentDetailsDto updateStudent(Long id, UpdateStudentRequestDto studentDto);
 
     void deleteStudent(Long id);
 }
