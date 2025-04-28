@@ -1,6 +1,7 @@
 package ru.kors.springstudents.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.kors.springstudents.dto.CreateRequestDto;
@@ -13,12 +14,14 @@ import ru.kors.springstudents.repository.RequestRepository;
 import ru.kors.springstudents.repository.StudentRepository;
 import ru.kors.springstudents.service.RequestService;
 
-import java.time.LocalDateTime;
+import java.time.LocalDateTime; // Импорт для установки времени
+import java.util.HashSet; // Импорт HashSet
 import java.util.List;
+import java.util.Set;    // Импорт Set
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Primary // Убери @Primary, если есть другой основной бин RequestService
 public class RequestServiceImpl implements RequestService {
 
     private final RequestRepository repository;
@@ -28,21 +31,10 @@ public class RequestServiceImpl implements RequestService {
     @Override
     @Transactional(readOnly = true)
     public List<RequestDto> findAllRequests() {
-        return mapper.toDtoList(repository.findAll());
-    }
-
-    @Override
-    public RequestDto saveRequest(CreateRequestDto requestDto) {
-        Student student = studentRepository.findById(requestDto.getStudentId())
-            .orElseThrow(() -> new ResourceNotFoundException("Student with id "
-                + requestDto.getStudentId() + " not found for Request"));
-
-        Request request = mapper.toEntity(requestDto);
-        request.setStudent(student);
-        request.setCreatedAt(LocalDateTime.now());
-
-        Request savedRequest = repository.save(request); // Сохраняем Request
-        return mapper.toDto(savedRequest); // Возвращаем RequestDto
+        List<Request> requestList = repository.findAll();
+        // Преобразуем List в Set
+        Set<Request> requestSet = new HashSet<>(requestList);
+        return mapper.toDtoList(requestSet);
     }
 
     @Override
@@ -50,34 +42,45 @@ public class RequestServiceImpl implements RequestService {
     public RequestDto findRequestById(Long id) {
         return repository.findById(id)
             .map(mapper::toDto)
-            .orElseThrow(() -> new ResourceNotFoundException("Request with id "
-                + id + " not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Request not found with id: " + id));
     }
 
     @Override
-    public RequestDto updateRequest(Long id, CreateRequestDto requestDto) { // Или UpdateDTO
-        Request existingRequest = repository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Request with id "
-                + id + " not found"));
+    @Transactional
+    public RequestDto saveRequest(CreateRequestDto requestDto) {
+        Student student = studentRepository.findById(requestDto.getStudentId())
+            .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + requestDto.getStudentId()));
 
-        // Проверяем смену студента (если разрешено)
+        Request request = mapper.toEntity(requestDto);
+        request.setStudent(student);
+        request.setCreatedAt(LocalDateTime.now()); // Устанавливаем время создания
+        Request savedRequest = repository.save(request);
+        return mapper.toDto(savedRequest);
+    }
+
+    @Override
+    @Transactional
+    public RequestDto updateRequest(Long id, CreateRequestDto requestDto) {
+        Request existingRequest = repository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Request not found with id: " + id));
+
         if (!existingRequest.getStudent().getId().equals(requestDto.getStudentId())) {
             Student newStudent = studentRepository.findById(requestDto.getStudentId())
-                .orElseThrow(() -> new ResourceNotFoundException("New Student with id "
-                    + requestDto.getStudentId() + " not found for Request update"));
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + requestDto.getStudentId()));
             existingRequest.setStudent(newStudent);
         }
 
-        mapper.updateEntityFromDto(requestDto, existingRequest);
-
+        mapper.updateEntityFromDto(requestDto, existingRequest); // Метод должен быть в RequestMapper
+        // createdAt не обновляем?
         Request updatedRequest = repository.save(existingRequest);
         return mapper.toDto(updatedRequest);
     }
 
     @Override
+    @Transactional
     public void deleteRequest(Long id) {
         if (!repository.existsById(id)) {
-            throw new ResourceNotFoundException("Request with id " + id + " not found");
+            throw new ResourceNotFoundException("Request not found with id: " + id);
         }
         repository.deleteById(id);
     }

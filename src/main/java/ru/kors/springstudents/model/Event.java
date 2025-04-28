@@ -1,23 +1,11 @@
 package ru.kors.springstudents.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import jakarta.persistence.*; // Используй jakarta.persistence.*
+import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.HashSet; // Импортируй HashSet
+import java.util.Set;    // Импортируй Set
 
 @Getter
 @Setter
@@ -36,11 +24,12 @@ public class Event {
     private String description;
     private LocalDateTime date;
 
-    @ManyToMany(fetch = FetchType.LAZY) // Убрали cascade, используем FetchType
+    // Меняем List<Student> на Set<Student>
+    @ManyToMany(fetch = FetchType.LAZY) // Оставляем LAZY по умолчанию
     @JoinTable(
-        name = "student_event",
-        joinColumns = @JoinColumn(name = "event_id"),
-        inverseJoinColumns = @JoinColumn(name = "student_id")
+        name = "student_event", // Имя связующей таблицы
+        joinColumns = @JoinColumn(name = "event_id"), // Внешний ключ на текущую таблицу (events)
+        inverseJoinColumns = @JoinColumn(name = "student_id") // Внешний ключ на связанную таблицу (students)
     )
-    private List<Student> students;
+    private Set<Student> students = new HashSet<>(); // Инициализируем как HashSet
 }

@@ -1,6 +1,7 @@
 package ru.kors.springstudents.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.kors.springstudents.dto.CreateEventRequestDto;
@@ -13,17 +14,19 @@ import ru.kors.springstudents.repository.EventRepository;
 import ru.kors.springstudents.repository.StudentRepository;
 import ru.kors.springstudents.service.EventService;
 
+import java.util.HashSet; // Импорт HashSet
 import java.util.List;
-import java.util.stream.Collectors; // Collectors нужен для join
+import java.util.Set;    // Импорт Set
+import java.util.stream.Collectors; // Импорт Collectors
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Primary // Убери @Primary, если есть другой основной бин EventService
 public class EventServiceImpl implements EventService {
 
-    private static final String EVENT_NOT_FOUND_MSG = "Event with id %d not found";
-    private static final String STUDENTS_NOT_FOUND_MSG = "Students with ids [%s] not found for Event";
-    private static final String STUDENT_UPDATE_NOT_FOUND_MSG = "Some students not found for Event update";
+    private static final String EVENT_NOT_FOUND_MSG = "Event not found with id: ";
+    private static final String STUDENT_NOT_FOUND_MSG = "Student not found with id: ";
+
 
     private final EventRepository repository;
     private final StudentRepository studentRepository;
@@ -32,69 +35,72 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional(readOnly = true)
     public List<EventDto> findAllEvents() {
-        return mapper.toDtoList(repository.findAll());
-    }
-
-    @Override
-    public EventDto saveEvent(CreateEventRequestDto eventDto) {
-        Event event = mapper.toEntity(eventDto);
-
-        if (eventDto.getStudentIds() != null && !eventDto.getStudentIds().isEmpty()) {
-            List<Student> students = studentRepository.findAllById(eventDto.getStudentIds());
-            if (students.size() != eventDto.getStudentIds().size()) {
-                List<Long> foundIds = students.stream().map(Student::getId).toList();
-                String notFoundIdsString = eventDto.getStudentIds().stream()
-                    .filter(id -> !foundIds.contains(id))
-                    .map(String::valueOf)
-                    .collect(Collectors.joining(", "));
-                throw new ResourceNotFoundException(String.format(STUDENTS_NOT_FOUND_MSG, notFoundIdsString));
-            }
-            event.setStudents(students);
-        }
-
-        Event savedEvent = repository.save(event);
-        return mapper.toDto(savedEvent);
+        List<Event> eventList = repository.findAll();
+        // Преобразуем List в Set
+        Set<Event> eventSet = new HashSet<>(eventList);
+        return mapper.toDtoList(eventSet);
     }
 
     @Override
     @Transactional(readOnly = true)
     public EventDto findEventById(Long id) {
-        return repository.findById(id)
-            .map(mapper::toDto)
-            .orElseThrow(() -> new ResourceNotFoundException(String.format(EVENT_NOT_FOUND_MSG, id)));
+        // Загружаем событие вместе со студентами, если нужно (используем EntityGraph или JOIN FETCH в репозитории)
+        // Или оставляем LAZY, тогда студенты подгрузятся при вызове mapper.toDto внутри транзакции
+        return repository.findById(id) // Предполагаем, что findById загрузит студентов (LAZY или EAGER)
+            .map(mapper::toDto) // Маппер вызовет getStudents(), что подгрузит их, если LAZY
+            .orElseThrow(() -> new ResourceNotFoundException(EVENT_NOT_FOUND_MSG + id));
+    }
+
+
+    @Override
+    @Transactional
+    public EventDto saveEvent(CreateEventRequestDto eventDto) {
+        Event event = mapper.toEntity(eventDto);
+
+        // Находим студентов по ID и преобразуем в Set
+        List<Student> studentList = studentRepository.findAllById(eventDto.getStudentIds());
+        if (studentList.size() != eventDto.getStudentIds().size()) {
+            // Можно добавить более детальную проверку, какие ID не найдены
+            throw new ResourceNotFoundException("One or more students not found for the provided IDs.");
+        }
+        Set<Student> students = new HashSet<>(studentList); // Преобразуем List в Set
+        event.setStudents(students); // Устанавливаем Set<Student>
+
+        // Сохраняем событие (каскадное сохранение связей не настроено, так как студенты уже существуют)
+        Event savedEvent = repository.save(event);
+        // Возвращаем DTO. Студенты уже должны быть загружены или подгрузятся маппером.
+        return mapper.toDto(savedEvent);
     }
 
     @Override
+    @Transactional
     public EventDto updateEvent(Long id, CreateEventRequestDto eventDto) {
         Event existingEvent = repository.findById(id)
-            // Используем константу и форматирование
-            .orElseThrow(() -> new ResourceNotFoundException(String.format(EVENT_NOT_FOUND_MSG, id)));
+            .orElseThrow(() -> new ResourceNotFoundException(EVENT_NOT_FOUND_MSG + id));
 
-        mapper.updateEntityFromDto(eventDto, existingEvent);
+        // Обновляем основные поля события
+        mapper.updateEntityFromDto(eventDto, existingEvent); // Метод должен быть в EventMapper
 
-        existingEvent.getStudents().clear();
-        if (eventDto.getStudentIds() != null && !eventDto.getStudentIds().isEmpty()) {
-            List<Student> students = studentRepository.findAllById(eventDto.getStudentIds());
-            if (students.size() != eventDto.getStudentIds().size()) {
-                // Используем константу
-                throw new ResourceNotFoundException(STUDENT_UPDATE_NOT_FOUND_MSG);
-            }
-            existingEvent.setStudents(students);
+        // Обновляем список студентов
+        List<Student> studentList = studentRepository.findAllById(eventDto.getStudentIds());
+        if (studentList.size() != eventDto.getStudentIds().size()) {
+            throw new ResourceNotFoundException("One or more students not found for the provided IDs during update.");
         }
+        Set<Student> students = new HashSet<>(studentList); // Преобразуем List в Set
+        existingEvent.setStudents(students); // Устанавливаем новый Set<Student>
 
         Event updatedEvent = repository.save(existingEvent);
         return mapper.toDto(updatedEvent);
     }
 
     @Override
+    @Transactional
     public void deleteEvent(Long id) {
-        Event event = repository.findById(id)
-            // Используем константу и форматирование
-            .orElseThrow(() -> new ResourceNotFoundException(String.format(EVENT_NOT_FOUND_MSG, id)));
-
-        event.getStudents().clear();
-        repository.save(event);
-
+        if (!repository.existsById(id)) {
+            throw new ResourceNotFoundException(EVENT_NOT_FOUND_MSG + id);
+        }
+        // Связи ManyToMany обычно удаляются автоматически при удалении владельца связи
+        // (если не используется cascade=REMOVE на стороне Student)
         repository.deleteById(id);
     }
 }

@@ -2,7 +2,7 @@ package ru.kors.springstudents.dto;
 
 import lombok.Data;
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Set;
 
 @Data
 public class StudentDetailsDto { // Новое DTO для деталей
@@ -13,9 +13,9 @@ public class StudentDetailsDto { // Новое DTO для деталей
   private String email;
   private int age;
   // --- Списки вложенных DTO ---
-  private List<RequestDto> requests;
-  private List<EventDto> events;
-  private List<DutyDto> duties;
-  private List<ForumPostDto> forumPosts;
-  private List<BarterDto> barters;
+  private Set<RequestDto> requests;
+  private Set<EventDto> events;
+  private Set<DutyDto> duties;
+  private Set<ForumPostDto> forumPosts;
+  private Set<BarterDto> barters;
 }

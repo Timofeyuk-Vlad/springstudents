@@ -1,6 +1,7 @@
 package ru.kors.springstudents.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.kors.springstudents.dto.BarterDto;
@@ -13,36 +14,26 @@ import ru.kors.springstudents.repository.BarterRepository;
 import ru.kors.springstudents.repository.StudentRepository;
 import ru.kors.springstudents.service.BarterService;
 
+import java.util.HashSet; // Импорт HashSet
 import java.util.List;
+import java.util.Set;    // Импорт Set
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Primary // Убери @Primary, если есть другой основной бин BarterService
 public class BarterServiceImpl implements BarterService {
 
     private final BarterRepository repository;
-    private final StudentRepository studentRepository; // Внедряем репозиторий студентов
+    private final StudentRepository studentRepository; // Нужен для поиска студента
     private final BarterMapper mapper;
 
     @Override
     @Transactional(readOnly = true)
     public List<BarterDto> findAllBarters() {
-        return mapper.toDtoList(repository.findAll());
-    }
-
-    @Override
-    public BarterDto saveBarter(CreateBarterRequestDto barterDto) {
-        // Находим студента по ID из DTO
-        Student student = studentRepository.findById(barterDto.getStudentId())
-            .orElseThrow(() -> new ResourceNotFoundException("Student with id "
-                + barterDto.getStudentId()
-                + " not found for Barter"));
-
-        Barter barter = mapper.toEntity(barterDto);
-        barter.setStudent(student); // Устанавливаем связь
-
-        Barter savedBarter = repository.save(barter);
-        return mapper.toDto(savedBarter);
+        List<Barter> bartersList = repository.findAll();
+        // Преобразуем List в Set перед передачей в маппер
+        Set<Barter> bartersSet = new HashSet<>(bartersList);
+        return mapper.toDtoList(bartersSet);
     }
 
     @Override
@@ -50,21 +41,32 @@ public class BarterServiceImpl implements BarterService {
     public BarterDto findBarterById(Long id) {
         return repository.findById(id)
             .map(mapper::toDto)
-            .orElseThrow(() -> new ResourceNotFoundException("Barter with id "
-                + id + " not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Barter not found with id: " + id));
     }
 
     @Override
-    public BarterDto updateBarter(Long id, CreateBarterRequestDto barterDto) { // Или UpdateDTO
-        Barter existingBarter = repository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Barter with id "
-                + id + " not found"));
+    @Transactional
+    public BarterDto saveBarter(CreateBarterRequestDto barterDto) {
+        // Находим студента
+        Student student = studentRepository.findById(barterDto.getStudentId())
+            .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + barterDto.getStudentId()));
 
-        // Проверяем, изменился ли студент (если это разрешено)
+        Barter barter = mapper.toEntity(barterDto);
+        barter.setStudent(student); // Устанавливаем связь
+        Barter savedBarter = repository.save(barter);
+        return mapper.toDto(savedBarter);
+    }
+
+    @Override
+    @Transactional
+    public BarterDto updateBarter(Long id, CreateBarterRequestDto barterDto) {
+        Barter existingBarter = repository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Barter not found with id: " + id));
+
+        // Проверяем, изменился ли студент и находим нового, если да
         if (!existingBarter.getStudent().getId().equals(barterDto.getStudentId())) {
             Student newStudent = studentRepository.findById(barterDto.getStudentId())
-                .orElseThrow(() -> new ResourceNotFoundException("New Student with id "
-                    + barterDto.getStudentId() + " not found for Barter update"));
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + barterDto.getStudentId()));
             existingBarter.setStudent(newStudent);
         }
 
@@ -75,9 +77,10 @@ public class BarterServiceImpl implements BarterService {
     }
 
     @Override
+    @Transactional
     public void deleteBarter(Long id) {
         if (!repository.existsById(id)) {
-            throw new ResourceNotFoundException("Barter with id " + id + " not found");
+            throw new ResourceNotFoundException("Barter not found with id: " + id);
         }
         repository.deleteById(id);
     }

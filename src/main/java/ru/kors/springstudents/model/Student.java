@@ -1,26 +1,13 @@
+// Student.java
 package ru.kors.springstudents.model;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-// Убрали @Transient, т.к. age вычисляется методом
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import jakarta.persistence.*; // Используй jakarta.persistence.*
+import lombok.*; // Убедись, что все нужные аннотации Lombok есть
 
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.List;
+import java.util.HashSet; // Импортируй HashSet
+import java.util.Set;    // Импортируй Set
 
 @Getter
 @Setter
@@ -37,23 +24,23 @@ public class Student {
     private String firstName;
     private String lastName;
     private LocalDate dateOfBirth;
-    @Column(unique = true)
+    @Column(unique = true, nullable = false) // Email должен быть not null
     private String email;
 
-    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Request> requests;
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true) // Добавь orphanRemoval, если нужно удалять Request при удалении из коллекции
+    private Set<Request> requests = new HashSet<>();
 
     @ManyToMany(mappedBy = "students", fetch = FetchType.LAZY)
-    private List<Event> events;
+    private Set<Event> events = new HashSet<>();
 
-    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Duty> duties;
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private Set<Duty> duties = new HashSet<>();
 
-    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<ForumPost> forumPosts;
+    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private Set<ForumPost> forumPosts = new HashSet<>();
 
-    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Barter> barters;
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private Set<Barter> barters = new HashSet<>();
 
     public int getAge() {
         if (dateOfBirth == null) {

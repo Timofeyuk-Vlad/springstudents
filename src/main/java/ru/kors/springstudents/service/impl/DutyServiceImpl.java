@@ -1,6 +1,7 @@
 package ru.kors.springstudents.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.kors.springstudents.dto.CreateDutyRequestDto;
@@ -11,13 +12,15 @@ import ru.kors.springstudents.model.Duty;
 import ru.kors.springstudents.model.Student;
 import ru.kors.springstudents.repository.DutyRepository;
 import ru.kors.springstudents.repository.StudentRepository;
-import ru.kors.springstudents.service.DutyService; // Убедись, что интерфейс обновлен
+import ru.kors.springstudents.service.DutyService;
 
+import java.util.HashSet; // Импорт HashSet
 import java.util.List;
+import java.util.Set;    // Импорт Set
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Primary // Убери @Primary, если есть другой основной бин DutyService
 public class DutyServiceImpl implements DutyService {
 
     private final DutyRepository repository;
@@ -27,20 +30,10 @@ public class DutyServiceImpl implements DutyService {
     @Override
     @Transactional(readOnly = true)
     public List<DutyDto> findAllDuties() {
-        return mapper.toDtoList(repository.findAll());
-    }
-
-    @Override
-    public DutyDto saveDuty(CreateDutyRequestDto dutyDto) {
-        Student student = studentRepository.findById(dutyDto.getStudentId())
-            .orElseThrow(() -> new ResourceNotFoundException("Student with id "
-                + dutyDto.getStudentId() + " not found for Duty"));
-
-        Duty duty = mapper.toEntity(dutyDto);
-        duty.setStudent(student);
-
-        Duty savedDuty = repository.save(duty);
-        return mapper.toDto(savedDuty);
+        List<Duty> dutiesList = repository.findAll();
+        // Преобразуем List в Set
+        Set<Duty> dutiesSet = new HashSet<>(dutiesList);
+        return mapper.toDtoList(dutiesSet);
     }
 
     @Override
@@ -48,31 +41,43 @@ public class DutyServiceImpl implements DutyService {
     public DutyDto findDutyById(Long id) {
         return repository.findById(id)
             .map(mapper::toDto)
-            .orElseThrow(() -> new ResourceNotFoundException("Duty with id " + id + " not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Duty not found with id: " + id));
     }
 
     @Override
-    public DutyDto updateDuty(Long id, CreateDutyRequestDto dutyDto) { // Или UpdateDTO
-        Duty existingDuty = repository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Duty with id " + id + " not found"));
+    @Transactional
+    public DutyDto saveDuty(CreateDutyRequestDto dutyDto) {
+        Student student = studentRepository.findById(dutyDto.getStudentId())
+            .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + dutyDto.getStudentId()));
 
-        // Проверка смены студента
+        Duty duty = mapper.toEntity(dutyDto);
+        duty.setStudent(student);
+        Duty savedDuty = repository.save(duty);
+        return mapper.toDto(savedDuty);
+    }
+
+    @Override
+    @Transactional
+    public DutyDto updateDuty(Long id, CreateDutyRequestDto dutyDto) {
+        Duty existingDuty = repository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Duty not found with id: " + id));
+
         if (!existingDuty.getStudent().getId().equals(dutyDto.getStudentId())) {
             Student newStudent = studentRepository.findById(dutyDto.getStudentId())
-                .orElseThrow(() -> new ResourceNotFoundException("New Student with id "
-                    + dutyDto.getStudentId() + " not found for Duty update"));
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + dutyDto.getStudentId()));
             existingDuty.setStudent(newStudent);
         }
 
-        mapper.updateEntityFromDto(dutyDto, existingDuty); // Обновляем дату
+        mapper.updateEntityFromDto(dutyDto, existingDuty); // Метод update должен быть в маппере DutyMapper
         Duty updatedDuty = repository.save(existingDuty);
         return mapper.toDto(updatedDuty);
     }
 
     @Override
+    @Transactional
     public void deleteDuty(Long id) {
         if (!repository.existsById(id)) {
-            throw new ResourceNotFoundException("Duty with id " + id + " not found");
+            throw new ResourceNotFoundException("Duty not found with id: " + id);
         }
         repository.deleteById(id);
     }

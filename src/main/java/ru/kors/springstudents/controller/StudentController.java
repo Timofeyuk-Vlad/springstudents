@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.kors.springstudents.dto.*; // Импорт всех DTO
+import ru.kors.springstudents.dto.*;
 import ru.kors.springstudents.service.StudentService;
 
 import java.util.List;
@@ -17,29 +17,35 @@ public class StudentController {
 
     private final StudentService service;
 
-    @GetMapping // Возвращает краткий список
-    public ResponseEntity<List<StudentSummaryDto>> findAllStudents() {
+    @GetMapping
+    public ResponseEntity<List<StudentSummaryDto>> findAllStudentsSummary() {
         return ResponseEntity.ok(service.findAllStudentsSummary());
     }
 
-    @PostMapping // Создает и возвращает детали
+    @GetMapping("/details")
+    public ResponseEntity<List<StudentDetailsDto>> findAllStudentsDetails() {
+        List<StudentDetailsDto> studentsDetails = service.findAllStudentsDetails();
+        return ResponseEntity.ok(studentsDetails);
+    }
+
+    @PostMapping
     public ResponseEntity<StudentDetailsDto> saveStudent(
         @Valid @RequestBody CreateStudentRequestDto studentRequest) {
         StudentDetailsDto savedStudent = service.saveStudent(studentRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedStudent);
     }
 
-    @GetMapping("/email/{email}") // Возвращает детали
+    @GetMapping("/email/{email}")
     public ResponseEntity<StudentDetailsDto> findByEmail(@PathVariable String email) {
         return ResponseEntity.ok(service.findDtoByEmail(email));
     }
 
-    @GetMapping("/{id}") // Возвращает детали
+    @GetMapping("/{id}")
     public ResponseEntity<StudentDetailsDto> findById(@PathVariable Long id) {
         return ResponseEntity.ok(service.findStudentDetailsById(id));
     }
 
-    @PutMapping("/{id}") // Обновляет и возвращает детали
+    @PutMapping("/{id}")
     public ResponseEntity<StudentDetailsDto> updateStudent(
         @PathVariable Long id,
         @Valid @RequestBody UpdateStudentRequestDto studentRequest) {

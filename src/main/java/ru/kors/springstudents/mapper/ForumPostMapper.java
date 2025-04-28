@@ -8,20 +8,24 @@ import ru.kors.springstudents.dto.ForumPostDto;
 import ru.kors.springstudents.model.ForumPost;
 
 import java.util.List;
+import java.util.Set; // Импорт Set
 
 @Mapper(componentModel = "spring", uses = HelperMapper.class)
 public interface ForumPostMapper {
+
     @Mapping(source = "author.id", target = "authorId")
-        // @Mapping(source = "author", target = "authorFullName", qualifiedByName = "getStudentFullName") // <-- УБИРАЕМ ЭТУ СТРОКУ
     ForumPostDto toDto(ForumPost post);
 
-    List<ForumPostDto> toDtoList(List<ForumPost> posts);
+    // Принимаем Set<ForumPost>
+    List<ForumPostDto> toDtoList(Set<ForumPost> posts);
 
+    // Маппинг для создания
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "author", ignore = true)
     ForumPost toEntity(CreateForumPostRequestDto dto);
 
+    // Маппинг для обновления (если нужен)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "author", ignore = true)
