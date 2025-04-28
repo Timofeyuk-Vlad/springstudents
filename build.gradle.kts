@@ -64,7 +64,7 @@ dependencies {
 	annotationProcessor("org.projectlombok:lombok-mapstruct-binding:0.2.0")
 
 	runtimeOnly("org.postgresql:postgresql")
-	runtimeOnly("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:6.0.1.5171")
+	//runtimeOnly("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:6.0.1.5171")
 
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 
