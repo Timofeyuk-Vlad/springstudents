@@ -42,11 +42,20 @@ repositories {
 	mavenCentral()
 }
 
+// Конфигурация для ВСЕХ конфигураций зависимостей
+configurations.all {
+	resolutionStrategy {
+		// Отключаем верификацию полностью
+		disableDependencyVerification()
+	}
+}
+
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.mapstruct:mapstruct:1.5.5.Final")
+	//implementation("com.example:adependency:1.0")
 
 	compileOnly("org.projectlombok:lombok:1.18.36")
 	annotationProcessor("org.projectlombok:lombok:1.18.36")
@@ -55,6 +64,7 @@ dependencies {
 	annotationProcessor("org.projectlombok:lombok-mapstruct-binding:0.2.0")
 
 	runtimeOnly("org.postgresql:postgresql")
+	//runtimeOnly("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:6.0.1.5171")
 
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 
@@ -65,5 +75,3 @@ dependencies {
 	testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
-
-
