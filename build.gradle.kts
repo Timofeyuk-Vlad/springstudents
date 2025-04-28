@@ -42,13 +42,13 @@ repositories {
 	mavenCentral()
 }
 
-// Конфигурация для ВСЕХ конфигураций зависимостей
-//configurations.all {
-//	resolutionStrategy {
-//		// Отключаем верификацию полностью
-//		disableDependencyVerification()
-//	}
-//}
+ //Конфигурация для ВСЕХ конфигураций зависимостей
+configurations.all {
+	resolutionStrategy {
+		// Отключаем верификацию полностью
+		disableDependencyVerification()
+	}
+}
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
