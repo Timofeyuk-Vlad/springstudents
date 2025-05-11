@@ -12,10 +12,6 @@ public class StudentDto {
     private LocalDate dateOfBirth;
     private String email;
     private int age;
-    // Списки ID связанных сущностей, чтобы избежать LazyInitializationException и циклов
-    private List<Long> requestIds;
     private List<Long> eventIds;
-    private List<Long> dutyIds;
-    private List<Long> forumPostIds;
     private List<Long> barterIds;
 }

@@ -5,7 +5,7 @@ import ru.kors.springstudents.dto.CreateBarterRequestDto;
 
 import java.util.List;
 
-public interface BarterService { // Убедись, что имя интерфейса правильное
+public interface BarterService {
     List<BarterDto> findAllBarters();
 
     BarterDto saveBarter(CreateBarterRequestDto barterDto);

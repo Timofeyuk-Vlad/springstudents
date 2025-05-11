@@ -1,19 +1,32 @@
-// Student.java
 package ru.kors.springstudents.model;
 
-import jakarta.persistence.*; // Используй jakarta.persistence.*
-import lombok.*; // Убедись, что все нужные аннотации Lombok есть
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.CascadeType;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.HashSet; // Импортируй HashSet
-import java.util.Set;    // Импортируй Set
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = {"requests", "events", "duties", "forumPosts", "barters"})
+@ToString(exclude = {"events", "barters"})
 @EqualsAndHashCode(of = "id")
 @Entity
 @Table(name = "students")
@@ -24,20 +37,11 @@ public class Student {
     private String firstName;
     private String lastName;
     private LocalDate dateOfBirth;
-    @Column(unique = true, nullable = false) // Email должен быть not null
+    @Column(unique = true, nullable = false)
     private String email;
-
-    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true) // Добавь orphanRemoval, если нужно удалять Request при удалении из коллекции
-    private Set<Request> requests = new HashSet<>();
 
     @ManyToMany(mappedBy = "students", fetch = FetchType.LAZY)
     private Set<Event> events = new HashSet<>();
-
-    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private Set<Duty> duties = new HashSet<>();
-
-    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private Set<ForumPost> forumPosts = new HashSet<>();
 
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private Set<Barter> barters = new HashSet<>();

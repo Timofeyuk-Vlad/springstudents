@@ -7,6 +7,7 @@ plugins {
 	java
 	id("org.springframework.boot") version "3.4.3"
 	id("io.spring.dependency-management") version "1.1.7"
+	//kotlin("jvm") version "1.9.23"
 
 	checkstyle
 	id("org.sonarqube") version "6.0.1.5171"
@@ -55,6 +56,8 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.mapstruct:mapstruct:1.5.5.Final")
+	implementation("org.springframework.boot:spring-boot-starter-aop")
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0") // Используй актуальную версию
 	//implementation("com.example:adependency:1.0")
 
 	compileOnly("org.projectlombok:lombok:1.18.36")

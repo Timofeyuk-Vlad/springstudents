@@ -3,25 +3,28 @@ package ru.kors.springstudents.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.kors.springstudents.cache.StudentCache;
 import ru.kors.springstudents.dto.CreateStudentRequestDto;
 import ru.kors.springstudents.dto.StudentDetailsDto;
 import ru.kors.springstudents.dto.StudentSummaryDto;
 import ru.kors.springstudents.dto.UpdateStudentRequestDto;
 import ru.kors.springstudents.exception.ResourceNotFoundException;
 import ru.kors.springstudents.mapper.StudentMapper;
+import ru.kors.springstudents.model.Event;
 import ru.kors.springstudents.model.Student;
 import ru.kors.springstudents.repository.StudentRepository;
 import ru.kors.springstudents.service.StudentService;
 
+import java.util.HashSet;
 import java.util.List;
-// import java.util.stream.Collectors; // Больше не нужен здесь, т.к. используем toDetailsDtoList
+import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-@Primary
+@Transactional
 public class StudentServiceImpl implements StudentService {
 
     private static final String STUDENT_NOT_FOUND_BY_ID_MSG = "Student with id %d not found";
@@ -31,6 +34,7 @@ public class StudentServiceImpl implements StudentService {
 
     private final StudentRepository repository;
     private final StudentMapper mapper;
+    private final StudentCache studentCache;
 
     private StudentService self;
 
@@ -43,23 +47,33 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional(readOnly = true)
     public List<StudentSummaryDto> findAllStudentsSummary() {
-        List<Student> students = repository.findAll(); // EntityGraph сработает
+        List<Student> students = repository.findAll();
         return mapper.toSummaryDtoList(students);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<StudentDetailsDto> findAllStudentsDetails() {
-        List<Student> students = repository.findAll(); // EntityGraph сработает
-        return mapper.toDetailsDtoList(students); // Используем метод маппера для списка
+        List<Student> students = repository.findAll();
+        return mapper.toDetailsDtoList(students);
     }
 
     @Override
     @Transactional(readOnly = true)
     public StudentDetailsDto findStudentDetailsById(Long id) {
-        return repository.findById(id) // EntityGraph сработает
+        Optional<StudentDetailsDto> cachedDto = studentCache.get(id);
+        if (cachedDto.isPresent()) {
+            System.out.println("==== CACHE HIT! ID: " + id + " ====");
+            return cachedDto.get();
+        }
+
+        System.out.println("==== CACHE MISS! ID: " + id + " - Going to DB ====");
+        StudentDetailsDto studentDto = repository.findById(id)
             .map(mapper::toDetailsDto)
             .orElseThrow(() -> new ResourceNotFoundException(String.format(STUDENT_NOT_FOUND_BY_ID_MSG, id)));
+
+        studentCache.put(id, studentDto);
+        return studentDto;
     }
 
     @Override
@@ -70,7 +84,10 @@ public class StudentServiceImpl implements StudentService {
         }
         Student student = mapper.toEntity(studentDto);
         Student savedStudent = repository.save(student);
-        return self.findStudentDetailsById(savedStudent.getId()); // Получаем детали через self-вызов
+
+        StudentDetailsDto detailsDto = mapper.toDetailsDto(savedStudent);
+        studentCache.put(savedStudent.getId(), detailsDto);
+        return detailsDto;
     }
 
     @Override
@@ -80,7 +97,7 @@ public class StudentServiceImpl implements StudentService {
         if (student == null) {
             throw new ResourceNotFoundException(String.format(STUDENT_NOT_FOUND_BY_EMAIL_MSG, email));
         }
-        return self.findStudentDetailsById(student.getId()); // Получаем детали через self-вызов
+        return self.findStudentDetailsById(student.getId());
     }
 
     @Override
@@ -96,16 +113,39 @@ public class StudentServiceImpl implements StudentService {
 
         mapper.updateEntityFromDto(studentDto, existingStudent);
         Student updatedStudent = repository.save(existingStudent);
-        // Данные (включая связи, загруженные findById) уже в updatedStudent
-        return mapper.toDetailsDto(updatedStudent);
+        StudentDetailsDto updatedDetailsDto = mapper.toDetailsDto(updatedStudent);
+        studentCache.put(id, updatedDetailsDto);
+        return updatedDetailsDto;
     }
 
     @Override
     @Transactional
     public void deleteStudent(Long id) {
-        if (!repository.existsById(id)) {
-            throw new ResourceNotFoundException(String.format(STUDENT_NOT_FOUND_BY_ID_MSG, id));
+        Student student = repository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException(String.format(STUDENT_NOT_FOUND_BY_ID_MSG, id)));
+
+        Set<Event> eventsToRemoveFrom = new HashSet<>(student.getEvents());
+        for (Event event : eventsToRemoveFrom) {
+            event.getStudents().remove(student);
         }
-        repository.deleteById(id);
+        student.getEvents().clear();
+
+        repository.delete(student);
+
+        studentCache.evict(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<StudentSummaryDto> findStudentsByEventName(String eventName) {
+        List<Student> students = repository.findStudentsByEventNameJpql(eventName);
+        return mapper.toSummaryDtoList(students);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<StudentSummaryDto> findStudentsWithActiveBarterByItem(String itemName) {
+        List<Student> students = repository.findStudentsWithActiveBarterByItemNative(itemName);
+        return mapper.toSummaryDtoList(students);
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.kors.springstudents.dto.*;
 import ru.kors.springstudents.service.StudentService;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -56,5 +57,35 @@ public class StudentController {
     public ResponseEntity<Void> deleteStudent(@PathVariable Long id) {
         service.deleteStudent(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // --- НОВЫЕ ЭНДПОИНТЫ для кастомных запросов ---
+
+    /**
+     * Находит студентов (краткая информация), участвующих в событии с заданным именем.
+     * Использует JPQL запрос.
+     * Пример запроса: GET /api/v1/students/search/by-event-name?name=Конференция
+     *
+     * @param eventName Имя события (обязательный параметр запроса).
+     * @return Список StudentSummaryDto или пустой список.
+     */
+    @GetMapping("/search/by-event-name")
+    public ResponseEntity<List<StudentSummaryDto>> findStudentsByEventName(
+        @RequestParam(name = "name") String eventName) {
+        return ResponseEntity.ok(service.findStudentsByEventName(eventName));
+    }
+
+    /**
+     * Находит студентов (краткая информация), имеющих активный обмен по заданному предмету.
+     * Использует Native Query запрос.
+     * Пример запроса: GET /api/v1/students/search/by-active-barter-item?item=Учебник по Java
+     *
+     * @param itemName Название предмета обмена (обязательный параметр запроса).
+     * @return Список StudentSummaryDto или пустой список.
+     */
+    @GetMapping("/search/by-active-barter-item")
+    public ResponseEntity<List<StudentSummaryDto>> findStudentsByActiveBarterItem(
+        @RequestParam(name = "item") String itemName) {
+        return ResponseEntity.ok(service.findStudentsWithActiveBarterByItem(itemName));
     }
 }
