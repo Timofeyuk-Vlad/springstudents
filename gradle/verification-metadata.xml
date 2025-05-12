@@ -4,33 +4,13 @@
       <verify-metadata>true</verify-metadata>
       <verify-signatures>true</verify-signatures>
       <ignored-keys>
-         <ignored-key id="0CC0B712FEE75827" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="17A27CE7A60FF5F0" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="21A24B3F8B0F594A" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="3FAAD2CD5ECBB314" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="3FBA8E8E719022D7" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="4CC08E7F47C3EC76" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="54963C3E875A56AE" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="57376543CEF65875" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="62DD826536D24571" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="6601E5C08DCCBB96" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="66D68DAA073BE985" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="6A0975F8B1127B83" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="71B329993BFFCFDD" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="8118B3BCDB1A5000" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="9757D7E7E06DD2AC" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="9A0B94DEC0FFA7EE" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="9E31AB27445478DB" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="9EB80E92EB2135B1" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="A388C395AAFB80F8" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="B5A9E81B565E89E0" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="B6E83A2D2E447E56" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="B7AE15C15C321C44" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="B7DC526C17E3608B" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="BAC30622339994C4" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="BCF4173966770193" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="DB901B24CAD38BC4" reason="Key couldn't be downloaded from any key server"/>
-         <ignored-key id="F13D3E721D56BD54" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="F2A01147D830C125" reason="Key couldn't be downloaded from any key server"/>
          <ignored-key id="F5C81DE10A0B8ECC" reason="Key couldn't be downloaded from any key server"/>
       </ignored-keys>
@@ -68,6 +48,7 @@
          </trusted-key>
          <trusted-key id="10F3C7A02ECA55E502BADCF3991EFB94DB91127D" group="org.ow2" name="ow2" version="1.5.1"/>
          <trusted-key id="120D6F34E627ED3A772EBBFE55C7E5E701832382" group="org.yaml" name="snakeyaml" version="2.2"/>
+         <trusted-key id="1357B30309DF9589A97DA56562DD826536D24571" group="org.springdoc" name="springdoc-openapi-starter-webmvc-ui" version="2.8.8"/>
          <trusted-key id="1452F35849B50750F6A3BBB4B54011358B352F85" group="^org[.]hibernate($|([.].*))" regex="true"/>
          <trusted-key id="147B691A19097624902F4EA9689CBE64F4BC997F" group="org.mockito"/>
          <trusted-key id="19BEAB2D799C020F17C69126B16698A4ADF4D638" group="org.checkerframework" name="checker-qual"/>
@@ -97,6 +78,7 @@
             <trusting group="org.postgresql" name="postgresql" version="42.6.2"/>
             <trusting group="org.postgresql" name="postgresql" version="42.7.5"/>
          </trusted-key>
+         <trusted-key id="3E61D8C230332482009D7F0EDB901B24CAD38BC4" group="io.swagger.core.v3"/>
          <trusted-key id="3F05DDA9F317301E927136D417A27CE7A60FF5F0" group="io.opentelemetry" name="opentelemetry-bom"/>
          <trusted-key id="3F2A008A91D11A7FAC4A0786F13D3E721D56BD54" group="org.reflections" name="reflections" version="0.10.2"/>
          <trusted-key id="4021EEEAFF5DE8404DCD0A270AA3E5C3D232E79B" group="jakarta.inject" name="jakarta.inject-api" version="2.0.1"/>
@@ -122,6 +104,10 @@
          </trusted-key>
          <trusted-key id="5989BAF76217B843D66BE55B2D0E1FB8FE4B68B4" group="^org[.]eclipse[.]jetty($|([.].*))" regex="true"/>
          <trusted-key id="59A8E169739301FD48139CA00E325BECB6962A24" group="jakarta.annotation" name="jakarta.annotation-api" version="2.1.1"/>
+         <trusted-key id="60200AC4AE761F1614D6C46766D68DAA073BE985">
+            <trusting group="ch.qos.logback"/>
+            <trusting group="org.slf4j"/>
+         </trusted-key>
          <trusted-key id="694621A7227D8D5289699830ABE9F3126BB741C1" group="com.google.guava" name="guava-parent" version="26.0-android"/>
          <trusted-key id="6DD3B8C64EF75253BEB2C53AD908A43FB7EC07AC" group="jakarta.activation" name="jakarta.activation-api" version="2.1.3"/>
          <trusted-key id="6F538074CCEBF35F28AF9B066A0975F8B1127B83" group="org.jetbrains.kotlin"/>
@@ -136,6 +122,7 @@
          <trusted-key id="80F6D6B0D90C6747753344CAB5A9E81B565E89E0" group="org.tomlj" name="tomlj" version="1.0.0"/>
          <trusted-key id="81BE0C38ACE8AEDC7735A05F4C2AFF633F3A7223" group="org.seleniumhq.selenium" name="selenium-bom" version="4.25.0"/>
          <trusted-key id="894F14D98D7F20D5E82645E3DFE102108BF9381F" group="^org[.]hibernate($|([.].*))" regex="true"/>
+         <trusted-key id="94976E17E18DD3201447286954963C3E875A56AE" group="io.smallrye"/>
          <trusted-key id="9579802DC3E15DE9C389239FC0D48A119CE7EE7B" group="com.zaxxer" name="HikariCP" version="5.1.0"/>
          <trusted-key id="97CB58ABBA8F94D9358E5968F0B5C3E6BE36BC75" group="org.mapstruct"/>
          <trusted-key id="998AF0E2B935996F5CEBD56B9B1FDA9F3C062231" group="org.apache" name="apache" version="6"/>
@@ -459,6 +446,7 @@
             <sha256 value="50c0a7c760c13ae6c042acf182b28f0047413db95b4636fb8879bcffab5ba875" origin="Generated by Gradle" reason="A key couldn't be downloaded"/>
          </artifact>
          <artifact name="jakarta.transaction-api-2.0.1.pom">
+            <pgp value="47EF0EC60C210BC6DFAA5819B7AE15C15C321C44"/>
             <sha256 value="5fe349981c156fbbe26388d59949fdac16bb8d7879ee61b34c49c7b5ce0f2f23" origin="Generated by Gradle" reason="A key couldn't be downloaded"/>
          </artifact>
       </component>
@@ -735,6 +723,7 @@
             <sha256 value="ace2a10dc8e2d5fd34925ecac03e4988b2c0f851650c94b8cef49ba1bd111478" origin="Generated by Gradle" reason="A key couldn't be downloaded"/>
          </artifact>
          <artifact name="annotations-13.0.pom">
+            <pgp value="2E3A1AFFE42B5F53AF19F780BCF4173966770193"/>
             <sha256 value="965aeb2bedff369819bdde1bf7a0b3b89b8247dd69c88b86375d76163bb8c397" origin="Generated by Gradle" reason="A key couldn't be downloaded"/>
          </artifact>
       </component>
@@ -820,6 +809,9 @@
          </artifact>
       </component>
       <component group="org.jspecify" name="jspecify" version="1.0.0">
+         <artifact name="jspecify-1.0.0.jar">
+            <sha256 value="1fad6e6be7557781e4d33729d49ae1cdc8fdda6fe477bb0cc68ce351eafdfbab" origin="Generated by Gradle" reason="A key couldn't be downloaded"/>
+         </artifact>
          <artifact name="jspecify-1.0.0.module">
             <sha256 value="d307ca77a54e18ac1ef1aaed4e5bbe014bd2f49f29e1d2f813e47c278283195b" origin="Generated by Gradle" reason="A key couldn't be downloaded"/>
          </artifact>
@@ -959,6 +951,9 @@
          </artifact>
       </component>
       <component group="org.springdoc" name="springdoc-openapi-starter-common" version="2.8.8">
+         <artifact name="springdoc-openapi-starter-common-2.8.8.jar">
+            <sha256 value="d61a0aa8a042cb5a6e82b597cb42ade7f829435052b96dcab3ceb0eee9d78ef6" origin="Generated by Gradle" reason="A key couldn't be downloaded"/>
+         </artifact>
          <artifact name="springdoc-openapi-starter-common-2.8.8.pom">
             <sha256 value="468a65874f4714171544b7d404a5185feac880e962b3ac7988a5805243ca5d46" origin="Generated by Gradle" reason="A key couldn't be downloaded"/>
          </artifact>
@@ -969,6 +964,9 @@
          </artifact>
       </component>
       <component group="org.springdoc" name="springdoc-openapi-starter-webmvc-api" version="2.8.8">
+         <artifact name="springdoc-openapi-starter-webmvc-api-2.8.8.jar">
+            <sha256 value="1c1d5cf3f9f40597b92c9c6158b70a187ec19f90787f2b4b5cc673aa88dd6ee0" origin="Generated by Gradle" reason="A key couldn't be downloaded"/>
+         </artifact>
          <artifact name="springdoc-openapi-starter-webmvc-api-2.8.8.pom">
             <sha256 value="b5026f96274ae2592447c7c6a4701dac3c688d6c2e9eb54f415b6d5837ed0309" origin="Generated by Gradle" reason="A key couldn't be downloaded"/>
          </artifact>
@@ -979,6 +977,9 @@
          </artifact>
       </component>
       <component group="org.springdoc" name="springdoc-openapi-starter-webmvc-ui" version="2.8.8">
+         <artifact name="springdoc-openapi-starter-webmvc-ui-2.8.8.jar">
+            <sha256 value="c95e5dffd1cb0c46a73a168a5f3a4dc58c700f46af80faebc365a35a3ff6ada9" origin="Generated by Gradle" reason="A key couldn't be downloaded"/>
+         </artifact>
          <artifact name="springdoc-openapi-starter-webmvc-ui-2.8.8.pom">
             <sha256 value="88ba3e59178b5576833c2a6dfd764d5b8dc705a8625e8430594ec09c22dc871c" origin="Generated by Gradle" reason="A key couldn't be downloaded"/>
          </artifact>
@@ -1051,6 +1052,9 @@
          </artifact>
       </component>
       <component group="org.webjars" name="webjars-locator-lite" version="1.0.1">
+         <artifact name="webjars-locator-lite-1.0.1.jar">
+            <sha256 value="a216c101379f6654bd65e50bf2c9d8a3575bc7d6e8de2898286ac49c56d9ae99" origin="Generated by Gradle" reason="A key couldn't be downloaded"/>
+         </artifact>
          <artifact name="webjars-locator-lite-1.0.1.pom">
             <sha256 value="00e723760fd762b598d051724e934af7145fae89eda153671c8934e811b40b2c" origin="Generated by Gradle" reason="A key couldn't be downloaded"/>
          </artifact>
