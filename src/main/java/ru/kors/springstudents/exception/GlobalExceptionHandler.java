@@ -34,25 +34,30 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponseDto> handleValidationExceptions(
-            MethodArgumentNotValidException ex, WebRequest request) {
+        MethodArgumentNotValidException ex, WebRequest request) {
         List<String> details = ex.getBindingResult()
-                .getAllErrors()
-                .stream()
-                .map(error -> {
-                    String fieldName = (error instanceof FieldError)
-                        ? ((FieldError) error).getField() : error.getObjectName();
-                    String errorMessage = error.getDefaultMessage();
-                    return fieldName + ": " + errorMessage;
-                })
-                .collect(Collectors.toList());
+            .getAllErrors()
+            .stream()
+            .map(error -> {
+                String fieldName;
+                // Используем Pattern Matching for instanceof
+                if (error instanceof FieldError fieldError) {
+                    fieldName = fieldError.getField();
+                } else {
+                    fieldName = error.getObjectName();
+                }
+                String errorMessage = error.getDefaultMessage();
+                return fieldName + ": " + errorMessage;
+            })
+            .collect(Collectors.toList());
 
         ErrorResponseDto errorResponse = new ErrorResponseDto(
-                LocalDateTime.now(),
-                HttpStatus.BAD_REQUEST.value(),
-                "Validation Failed",
-                "Input validation failed. Check details.",
-                request.getDescription(false).replace("uri=", ""),
-                details
+            LocalDateTime.now(),
+            HttpStatus.BAD_REQUEST.value(),
+            "Validation Failed",
+            "Input validation failed. Check details.",
+            request.getDescription(false).replace("uri=", ""),
+            details
         );
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
