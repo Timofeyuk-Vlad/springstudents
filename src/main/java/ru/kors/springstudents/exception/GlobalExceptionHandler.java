@@ -11,7 +11,6 @@ import ru.kors.springstudents.dto.ErrorResponseDto;
 import org.springframework.dao.DataIntegrityViolationException;
 
 import java.time.LocalDateTime;
-import java.util.stream.Collectors;
 import java.util.List;
 
 
@@ -40,7 +39,6 @@ public class GlobalExceptionHandler {
             .stream()
             .map(error -> {
                 String fieldName;
-                // Используем Pattern Matching for instanceof
                 if (error instanceof FieldError fieldError) {
                     fieldName = fieldError.getField();
                 } else {
@@ -49,7 +47,7 @@ public class GlobalExceptionHandler {
                 String errorMessage = error.getDefaultMessage();
                 return fieldName + ": " + errorMessage;
             })
-            .collect(Collectors.toList());
+            .toList(); // Используем новый метод .toList()
 
         ErrorResponseDto errorResponse = new ErrorResponseDto(
             LocalDateTime.now(),
