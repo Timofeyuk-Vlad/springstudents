@@ -1,8 +1,8 @@
 package ru.kors.springstudents.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger; // Импортируем Logger
-import org.slf4j.LoggerFactory; // Импортируем LoggerFactory
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -29,7 +29,6 @@ import java.util.Set;
 @Transactional
 public class StudentServiceImpl implements StudentService {
 
-    // Создаем логгер для этого класса
     private static final Logger log = LoggerFactory.getLogger(StudentServiceImpl.class);
 
     private static final String STUDENT_NOT_FOUND_BY_ID_MSG = "Student with id %d not found";
@@ -47,6 +46,20 @@ public class StudentServiceImpl implements StudentService {
     @Lazy
     public void setSelf(StudentService self) {
         this.self = self;
+    }
+
+    /**
+     * Очищает строку от символов новой строки и возврата каретки для безопасного логирования.
+     * @param input Входная строка.
+     * @return Очищенная строка или "null", если input был null.
+     */
+    private String sanitizeForLog(String input) {
+        if (input == null) {
+            return "null";
+        }
+        // Заменяем символы новой строки и возврата каретки на подчеркивание
+        // Это предотвращает инъекцию нескольких строк в лог (log forging)
+        return input.replace("\n", "_").replace("\r", "_");
     }
 
     @Override
@@ -68,16 +81,15 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional(readOnly = true)
     public StudentDetailsDto findStudentDetailsById(Long id) {
+        // Логирование ID (числового типа) безопасно
         log.debug("Attempting to find student details by ID: {}", id);
-        Optional<StudentDetailsDto> cachedDto = studentCache.get(id); // studentCache уже логирует hit/miss
+        Optional<StudentDetailsDto> cachedDto = studentCache.get(id);
         if (cachedDto.isPresent()) {
-            // System.out.println("==== CACHE HIT! ID: " + id + " ===="); // Заменяем
-            log.info("==== CACHE HIT! ID: {} ====", id); // Используем INFO для явных сообщений о кэше
+            log.info("==== CACHE HIT! ID: {} ====", id);
             return cachedDto.get();
         }
 
-        // System.out.println("==== CACHE MISS! ID: " + id + " - Going to DB ===="); // Заменяем
-        log.info("==== CACHE MISS! ID: {} - Going to DB ====", id); // Используем INFO
+        log.info("==== CACHE MISS! ID: {} - Going to DB ====", id);
         StudentDetailsDto studentDto = repository.findById(id)
             .map(mapper::toDetailsDto)
             .orElseThrow(() -> {
@@ -92,9 +104,10 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional
     public StudentDetailsDto saveStudent(CreateStudentRequestDto studentDto) {
-        log.info("Attempting to save new student with email: {}", studentDto.getEmail());
+        String sanitizedEmail = sanitizeForLog(studentDto.getEmail());
+        log.info("Attempting to save new student with email: {}", sanitizedEmail);
         if (repository.findStudentByEmail(studentDto.getEmail()) != null) {
-            log.warn("Attempt to save student with existing email: {}", studentDto.getEmail());
+            log.warn("Attempt to save student with existing email: {}", sanitizedEmail);
             throw new IllegalArgumentException(String.format(EMAIL_EXISTS_MSG, studentDto.getEmail()));
         }
         Student student = mapper.toEntity(studentDto);
@@ -110,19 +123,20 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional(readOnly = true)
     public StudentDetailsDto findDtoByEmail(String email) {
-        log.debug("Attempting to find student by email: {}", email);
-        Student student = repository.findStudentByEmail(email);
+        String sanitizedEmail = sanitizeForLog(email);
+        log.debug("Attempting to find student by email: {}", sanitizedEmail);
+        Student student = repository.findStudentByEmail(email); // Используем оригинальный email для поиска
         if (student == null) {
-            log.warn("Student not found with email: {}", email);
+            log.warn("Student not found with email: {}", sanitizedEmail);
             throw new ResourceNotFoundException(String.format(STUDENT_NOT_FOUND_BY_EMAIL_MSG, email));
         }
-        // Вызов self.findStudentDetailsById уже содержит логирование кэша
         return self.findStudentDetailsById(student.getId());
     }
 
     @Override
     @Transactional
     public StudentDetailsDto updateStudent(Long id, UpdateStudentRequestDto studentDto) {
+        // Логирование ID (числового типа) безопасно
         log.info("Attempting to update student with ID: {}", id);
         Student existingStudent = repository.findById(id)
             .orElseThrow(() -> {
@@ -130,9 +144,10 @@ public class StudentServiceImpl implements StudentService {
                 return new ResourceNotFoundException(String.format(STUDENT_NOT_FOUND_BY_ID_MSG, id));
             });
 
+        String sanitizedNewEmail = sanitizeForLog(studentDto.getEmail());
         if (!existingStudent.getEmail().equals(studentDto.getEmail()) &&
-            repository.findStudentByEmail(studentDto.getEmail()) != null) {
-            log.warn("Attempt to update student ID: {} with email {} that already exists for another student", id, studentDto.getEmail());
+            repository.findStudentByEmail(studentDto.getEmail()) != null) { // Используем оригинальный email для проверки
+            log.warn("Attempt to update student ID: {} with email {} that already exists for another student", id, sanitizedNewEmail);
             throw new IllegalArgumentException(String.format(OTHER_EMAIL_EXISTS_MSG, studentDto.getEmail()));
         }
 
@@ -158,10 +173,10 @@ public class StudentServiceImpl implements StudentService {
 
         Set<Event> eventsToRemoveFrom = new HashSet<>(student.getEvents());
         if (!eventsToRemoveFrom.isEmpty()) {
+            // Логирование ID и размера коллекции (числовые типы) безопасно
             log.debug("Removing student ID: {} from {} events", id, eventsToRemoveFrom.size());
             for (Event event : eventsToRemoveFrom) {
                 event.getStudents().remove(student);
-                // Неявное сохранение event произойдет при flush'е транзакции
             }
             student.getEvents().clear();
         }
@@ -176,16 +191,18 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional(readOnly = true)
     public List<StudentSummaryDto> findStudentsByEventName(String eventName) {
-        log.debug("Finding students by event name: {}", eventName);
-        List<Student> students = repository.findStudentsByEventNameJpql(eventName);
+        String sanitizedEventName = sanitizeForLog(eventName);
+        log.debug("Finding students by event name: {}", sanitizedEventName);
+        List<Student> students = repository.findStudentsByEventNameJpql(eventName); // Используем оригинальное имя для поиска
         return mapper.toSummaryDtoList(students);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<StudentSummaryDto> findStudentsWithActiveBarterByItem(String itemName) {
-        log.debug("Finding students with active barter by item: {}", itemName);
-        List<Student> students = repository.findStudentsWithActiveBarterByItemNative(itemName);
+        String sanitizedItemName = sanitizeForLog(itemName);
+        log.debug("Finding students with active barter by item: {}", sanitizedItemName);
+        List<Student> students = repository.findStudentsWithActiveBarterByItemNative(itemName); // Используем оригинальное имя для поиска
         return mapper.toSummaryDtoList(students);
     }
 }
