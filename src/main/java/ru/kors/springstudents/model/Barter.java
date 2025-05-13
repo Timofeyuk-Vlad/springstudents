@@ -32,7 +32,7 @@ public class Barter {
     private String description;
     private String status;
 
-    @ManyToOne(fetch = FetchType.LAZY) // Указываем FetchType явно
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)
     private Student student;
 }
