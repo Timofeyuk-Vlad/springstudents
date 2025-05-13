@@ -19,7 +19,7 @@ import lombok.ToString;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = {"student"}) // Исключаем student, чтобы избежать потенциальных циклов в логах
+@ToString(exclude = {"student"})
 @EqualsAndHashCode(of = "id")
 @Entity
 @Table(name = "barters")
