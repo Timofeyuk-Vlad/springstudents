@@ -33,7 +33,7 @@ public class StudentServiceImpl implements StudentService {
     private static final Logger log = LoggerFactory.getLogger(StudentServiceImpl.class);
 
     private static final String STUDENT_NOT_FOUND_BY_ID_MSG = "Student with id %d not found";
-    private static final String STUDENT_NOT_FOUND_BY_EMAIL_MSG = "Student with email %s not found";
+    private static final String STUDENT_NOT_FOUND_BY_EMAIL_MSG = "Student with email %s not found"; // Оставляем %s для String.format
     private static final String EMAIL_EXISTS_MSG = "Student with email %s already exists.";
     private static final String OTHER_EMAIL_EXISTS_MSG = "Another student with email %s already exists.";
 
@@ -68,7 +68,8 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional(readOnly = true)
     public StudentDetailsDto findStudentDetailsById(Long id) {
-        log.debug("Attempting to find student details by ID: {}", id); // ID безопасен
+        // ID не является user-controlled в этом контексте для логирования, его можно логировать напрямую
+        log.debug("Attempting to find student details by ID: {}", id);
         Optional<StudentDetailsDto> cachedDto = studentCache.get(id);
         if (cachedDto.isPresent()) {
             log.info("==== CACHE HIT! ID: {} ====", id);
@@ -79,6 +80,7 @@ public class StudentServiceImpl implements StudentService {
         StudentDetailsDto studentDto = repository.findById(id)
             .map(mapper::toDetailsDto)
             .orElseThrow(() -> {
+                // ID не user-controlled
                 log.warn("Student not found with ID: {}", id);
                 return new ResourceNotFoundException(String.format(STUDENT_NOT_FOUND_BY_ID_MSG, id));
             });
@@ -90,10 +92,15 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional
     public StudentDetailsDto saveStudent(CreateStudentRequestDto studentDto) {
-        // Кодируем email перед логированием
-        log.info("Attempting to save new student with email: {}", Encode.forJava(studentDto.getEmail()));
+        // Проверяем уровень логирования перед кодированием и логированием
+        if (log.isInfoEnabled()) {
+            log.info("Attempting to save new student with email: {}", Encode.forJava(studentDto.getEmail()));
+        }
         if (repository.findStudentByEmail(studentDto.getEmail()) != null) {
-            log.warn("Attempt to save student with existing email: {}", Encode.forJava(studentDto.getEmail()));
+            // Проверяем уровень логирования перед кодированием и логированием
+            if (log.isWarnEnabled()) {
+                log.warn("Attempt to save student with existing email: {}", Encode.forJava(studentDto.getEmail()));
+            }
             throw new IllegalArgumentException(String.format(EMAIL_EXISTS_MSG, studentDto.getEmail()));
         }
         Student student = mapper.toEntity(studentDto);
@@ -109,11 +116,16 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional(readOnly = true)
     public StudentDetailsDto findDtoByEmail(String email) {
-        // Кодируем email перед логированием
-        log.debug("Attempting to find student by email: {}", Encode.forJava(email));
-        Student student = repository.findStudentByEmail(email); // Для поиска используем оригинальный email
+        // Проверяем уровень логирования перед кодированием и логированием
+        if (log.isDebugEnabled()) {
+            log.debug("Attempting to find student by email: {}", Encode.forJava(email));
+        }
+        Student student = repository.findStudentByEmail(email);
         if (student == null) {
-            log.warn("Student not found with email: {}", Encode.forJava(email));
+            // Проверяем уровень логирования перед кодированием и логированием
+            if (log.isWarnEnabled()) {
+                log.warn("Student not found with email: {}", Encode.forJava(email));
+            }
             throw new ResourceNotFoundException(String.format(STUDENT_NOT_FOUND_BY_EMAIL_MSG, email));
         }
         return self.findStudentDetailsById(student.getId());
@@ -130,8 +142,11 @@ public class StudentServiceImpl implements StudentService {
             });
 
         if (!existingStudent.getEmail().equals(studentDto.getEmail()) &&
-            repository.findStudentByEmail(studentDto.getEmail()) != null) { // Для проверки используем оригинальный email
-            log.warn("Attempt to update student ID: {} with email {} that already exists for another student", id, Encode.forJava(studentDto.getEmail()));
+            repository.findStudentByEmail(studentDto.getEmail()) != null) {
+            // Проверяем уровень логирования перед кодированием и логированием
+            if (log.isWarnEnabled()) {
+                log.warn("Attempt to update student ID: {} with email {} that already exists for another student", id, Encode.forJava(studentDto.getEmail()));
+            }
             throw new IllegalArgumentException(String.format(OTHER_EMAIL_EXISTS_MSG, studentDto.getEmail()));
         }
 
@@ -174,18 +189,22 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional(readOnly = true)
     public List<StudentSummaryDto> findStudentsByEventName(String eventName) {
-        // Кодируем eventName перед логированием
-        log.debug("Finding students by event name: {}", Encode.forJava(eventName));
-        List<Student> students = repository.findStudentsByEventNameJpql(eventName); // Для поиска используем оригинальное имя
+        // Проверяем уровень логирования перед кодированием и логированием
+        if (log.isDebugEnabled()) {
+            log.debug("Finding students by event name: {}", Encode.forJava(eventName));
+        }
+        List<Student> students = repository.findStudentsByEventNameJpql(eventName);
         return mapper.toSummaryDtoList(students);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<StudentSummaryDto> findStudentsWithActiveBarterByItem(String itemName) {
-        // Кодируем itemName перед логированием
-        log.debug("Finding students with active barter by item: {}", Encode.forJava(itemName));
-        List<Student> students = repository.findStudentsWithActiveBarterByItemNative(itemName); // Для поиска используем оригинальное имя
+        // Проверяем уровень логирования перед кодированием и логированием
+        if (log.isDebugEnabled()) {
+            log.debug("Finding students with active barter by item: {}", Encode.forJava(itemName));
+        }
+        List<Student> students = repository.findStudentsWithActiveBarterByItemNative(itemName);
         return mapper.toSummaryDtoList(students);
     }
 }
