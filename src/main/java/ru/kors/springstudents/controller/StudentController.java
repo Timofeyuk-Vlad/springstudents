@@ -48,27 +48,6 @@ public class StudentController {
         return ResponseEntity.ok(studentsDetails);
     }
 
-    @Operation(summary = "Создать нового студента")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = "Студент успешно создан",
-            content = @Content(mediaType = "application/json",
-                schema = @Schema(implementation = StudentDetailsDto.class))),
-        @ApiResponse(responseCode = "400", description = "Невалидные входные данные",
-            content = @Content(mediaType = "application/json",
-                schema = @Schema(implementation = ErrorResponseDto.class))),
-        @ApiResponse(responseCode = "409", description = "Конфликт (например, email уже существует)",
-            content = @Content(mediaType = "application/json",
-                schema = @Schema(implementation = ErrorResponseDto.class)))
-    })
-    @PostMapping
-    public ResponseEntity<StudentDetailsDto> saveStudent(
-        @Parameter(description = "Данные для создания студента", required = true,
-            schema = @Schema(implementation = CreateStudentRequestDto.class))
-        @Valid @RequestBody CreateStudentRequestDto studentRequest) {
-        StudentDetailsDto savedStudent = service.saveStudent(studentRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedStudent);
-    }
-
     @Operation(summary = "Найти студента по email")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Студент найден",
@@ -161,5 +140,50 @@ public class StudentController {
         @Parameter(description = "Название предмета для поиска активных обменов", required = true)
         @RequestParam(name = "item") String itemName) {
         return ResponseEntity.ok(service.findStudentsWithActiveBarterByItem(itemName));
+    }
+
+    @Operation(summary = "Создать нового студента")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Студент успешно создан",
+            content = @Content(mediaType = "application/json",
+                schema = @Schema(implementation = StudentDetailsDto.class))),
+        @ApiResponse(responseCode = "400", description = "Невалидные входные данные",
+            content = @Content(mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponseDto.class))),
+        @ApiResponse(responseCode = "409", description = "Конфликт (например, email уже существует)",
+            content = @Content(mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponseDto.class)))
+    })
+    @PostMapping
+    public ResponseEntity<StudentDetailsDto> saveStudent(
+        @Parameter(description = "Данные для создания студента", required = true,
+            schema = @Schema(implementation = CreateStudentRequestDto.class))
+        @Valid @RequestBody CreateStudentRequestDto studentRequest) {
+        StudentDetailsDto savedStudent = service.saveStudent(studentRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedStudent);
+    }
+
+    @Operation(summary = "Массовое создание студентов",
+        description = "Принимает список DTO для создания нескольких студентов за один запрос.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Студенты успешно созданы",
+            content = @Content(mediaType = "application/json",
+                schema = @Schema(type = "array", implementation = StudentDetailsDto.class))),
+        @ApiResponse(responseCode = "400", description = "Невалидные входные данные для одного " +
+            "или нескольких студентов",
+            content = @Content(mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponseDto.class))),
+        @ApiResponse(responseCode = "409", description = "Конфликт (например, email уже существует " +
+            "для одного из студентов)",
+            content = @Content(mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponseDto.class)))
+    })
+    @PostMapping("/bulk")
+    public ResponseEntity<List<StudentDetailsDto>> saveStudentsBulk(
+        @Parameter(description = "Список DTO для создания студентов. Каждый элемент списка будет провалидирован.",
+            required = true)
+        @Valid @RequestBody List<CreateStudentRequestDto> studentRequests) {
+        List<StudentDetailsDto> savedStudents = service.saveStudentsBulk(studentRequests);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedStudents);
     }
 }

@@ -14,24 +14,23 @@ import ru.kors.springstudents.repository.BarterRepository;
 import ru.kors.springstudents.repository.StudentRepository;
 import ru.kors.springstudents.service.BarterService;
 
-import java.util.HashSet; // Импорт HashSet
+import java.util.HashSet;
 import java.util.List;
-import java.util.Set;    // Импорт Set
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-@Primary // Убери @Primary, если есть другой основной бин BarterService
+@Primary
 public class BarterServiceImpl implements BarterService {
 
     private final BarterRepository repository;
-    private final StudentRepository studentRepository; // Нужен для поиска студента
+    private final StudentRepository studentRepository;
     private final BarterMapper mapper;
 
     @Override
     @Transactional(readOnly = true)
     public List<BarterDto> findAllBarters() {
         List<Barter> bartersList = repository.findAll();
-        // Преобразуем List в Set перед передачей в маппер
         Set<Barter> bartersSet = new HashSet<>(bartersList);
         return mapper.toDtoList(bartersSet);
     }
@@ -63,14 +62,12 @@ public class BarterServiceImpl implements BarterService {
         Barter existingBarter = repository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Barter not found with id: " + id));
 
-        // Проверяем, изменился ли студент и находим нового, если да
         if (!existingBarter.getStudent().getId().equals(barterDto.getStudentId())) {
             Student newStudent = studentRepository.findById(barterDto.getStudentId())
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + barterDto.getStudentId()));
             existingBarter.setStudent(newStudent);
         }
 
-        // Обновляем остальные поля
         mapper.updateEntityFromDto(barterDto, existingBarter);
         Barter updatedBarter = repository.save(existingBarter);
         return mapper.toDto(updatedBarter);

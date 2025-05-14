@@ -60,8 +60,6 @@ public interface StudentService {
      */
     void deleteStudent(Long id);
 
-    // --- НОВЫЕ МЕТОДЫ для кастомных запросов ---
-
     /**
      * Находит студентов (краткая информация), участвующих в событии с заданным именем (JPQL).
      * @param eventName Имя события.
@@ -75,4 +73,12 @@ public interface StudentService {
      * @return Список StudentSummaryDto.
      */
     List<StudentSummaryDto> findStudentsWithActiveBarterByItem(String itemName);
+
+    /**
+     * Массово сохраняет список новых студентов.
+     * @param studentDtos Список DTO с данными для создания.
+     * @return Список DTO с деталями сохраненных студентов.
+     * @throws IllegalArgumentException если email одного из студентов уже существует.
+     */
+    List<StudentDetailsDto> saveStudentsBulk(List<CreateStudentRequestDto> studentDtos);
 }

@@ -1,7 +1,7 @@
 package ru.kors.springstudents.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.owasp.encoder.Encode; // Импортируем OWASP Encoder
+import org.owasp.encoder.Encode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +21,8 @@ import ru.kors.springstudents.repository.StudentRepository;
 import ru.kors.springstudents.service.StudentService;
 
 import java.util.HashSet;
+import java.util.Collections;
+import java.util.stream.Collectors;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -80,7 +82,6 @@ public class StudentServiceImpl implements StudentService {
         StudentDetailsDto studentDto = repository.findById(id)
             .map(mapper::toDetailsDto)
             .orElseThrow(() -> {
-                // ID не user-controlled
                 log.warn("Student not found with ID: {}", id);
                 return new ResourceNotFoundException(String.format(STUDENT_NOT_FOUND_BY_ID_MSG, id));
             });
@@ -92,12 +93,10 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional
     public StudentDetailsDto saveStudent(CreateStudentRequestDto studentDto) {
-        // Проверяем уровень логирования перед кодированием и логированием
         if (log.isInfoEnabled()) {
             log.info("Attempting to save new student with email: {}", Encode.forJava(studentDto.getEmail()));
         }
         if (repository.findStudentByEmail(studentDto.getEmail()) != null) {
-            // Проверяем уровень логирования перед кодированием и логированием
             if (log.isWarnEnabled()) {
                 log.warn("Attempt to save student with existing email: {}", Encode.forJava(studentDto.getEmail()));
             }
@@ -116,13 +115,11 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional(readOnly = true)
     public StudentDetailsDto findDtoByEmail(String email) {
-        // Проверяем уровень логирования перед кодированием и логированием
         if (log.isDebugEnabled()) {
             log.debug("Attempting to find student by email: {}", Encode.forJava(email));
         }
         Student student = repository.findStudentByEmail(email);
         if (student == null) {
-            // Проверяем уровень логирования перед кодированием и логированием
             if (log.isWarnEnabled()) {
                 log.warn("Student not found with email: {}", Encode.forJava(email));
             }
@@ -189,7 +186,6 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional(readOnly = true)
     public List<StudentSummaryDto> findStudentsByEventName(String eventName) {
-        // Проверяем уровень логирования перед кодированием и логированием
         if (log.isDebugEnabled()) {
             log.debug("Finding students by event name: {}", Encode.forJava(eventName));
         }
@@ -200,11 +196,51 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional(readOnly = true)
     public List<StudentSummaryDto> findStudentsWithActiveBarterByItem(String itemName) {
-        // Проверяем уровень логирования перед кодированием и логированием
         if (log.isDebugEnabled()) {
             log.debug("Finding students with active barter by item: {}", Encode.forJava(itemName));
         }
         List<Student> students = repository.findStudentsWithActiveBarterByItemNative(itemName);
         return mapper.toSummaryDtoList(students);
+    }
+
+    @Override
+    @Transactional
+    public List<StudentDetailsDto> saveStudentsBulk(List<CreateStudentRequestDto> studentDtos) {
+        if (studentDtos == null || studentDtos.isEmpty()) {
+            log.info("Received empty or null list for bulk student save.");
+            return Collections.emptyList();
+        }
+        log.info("Attempting to save {} students in bulk.", studentDtos.size());
+
+        Set<String> emailsInRequest = studentDtos.stream()
+            .map(CreateStudentRequestDto::getEmail)
+            .collect(Collectors.toSet());
+        if (emailsInRequest.size() != studentDtos.size()) {
+            log.warn("Duplicate emails found within the bulk request.");
+            throw new IllegalArgumentException("Duplicate emails found in the bulk request.");
+        }
+
+        for (CreateStudentRequestDto dto : studentDtos) {
+            if (repository.findStudentByEmail(dto.getEmail()) != null) {
+                if (log.isWarnEnabled()) {
+                    log.warn("Attempt to save student in bulk with existing email: {}", Encode.forJava(dto.getEmail()));
+                }
+                throw new IllegalArgumentException(String.format(EMAIL_EXISTS_MSG, dto.getEmail()));
+            }
+        }
+
+        List<StudentDetailsDto> savedStudentDetails = studentDtos.stream()
+            .map(dto -> {
+                Student student = mapper.toEntity(dto);
+                Student savedStudent = repository.save(student);
+                StudentDetailsDto detailsDto = mapper.toDetailsDto(savedStudent);
+                studentCache.put(savedStudent.getId(), detailsDto);
+                log.debug("Bulk saved student ID: {} and put into cache", savedStudent.getId());
+                return detailsDto;
+            })
+            .collect(Collectors.toList());
+
+        log.info("Successfully saved {} students in bulk.", savedStudentDetails.size());
+        return savedStudentDetails;
     }
 }
