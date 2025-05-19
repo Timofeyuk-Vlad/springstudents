@@ -1,10 +1,12 @@
 package ru.kors.springstudents.dto;
 
+import lombok.Builder;
 import lombok.Data;
 import java.time.LocalDate;
 import java.util.Set;
 
 @Data
+@Builder
 public class StudentDetailsDto {
   private Long id;
   private String firstName;

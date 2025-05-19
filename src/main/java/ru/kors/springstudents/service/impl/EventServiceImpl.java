@@ -1,7 +1,6 @@
 package ru.kors.springstudents.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.kors.springstudents.dto.CreateEventRequestDto;
@@ -20,7 +19,6 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-@Primary
 public class EventServiceImpl implements EventService {
 
     private static final String EVENT_NOT_FOUND_MSG = "Event not found with id: ";

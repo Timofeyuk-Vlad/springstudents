@@ -8,12 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 @Getter
 @Setter
@@ -22,6 +17,7 @@ import lombok.ToString;
 @ToString(exclude = {"student"})
 @EqualsAndHashCode(of = "id")
 @Entity
+@Builder
 @Table(name = "barters")
 public class Barter {
     @Id

@@ -67,15 +67,42 @@ dependencies {
 
 	annotationProcessor("org.mapstruct:mapstruct-processor:$mapstructVersion")
 	annotationProcessor("org.projectlombok:lombok-mapstruct-binding:$lombokMapstructBindingVersion")
+	testCompileOnly ("org.projectlombok:lombok")
+	testAnnotationProcessor ("org.projectlombok:lombok")
 
 	runtimeOnly("org.postgresql:postgresql")
 
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
-	testImplementation("org.junit.jupiter:junit-jupiter-api")
+	testImplementation("org.springframework.boot:spring-boot-starter-test") {
+		exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
+	}
+//	testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
+//	testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
+//	testImplementation("org.mockito:mockito-junit-jupiter:4.11.0")
+//	testImplementation("org.mockito:mockito-core:4.11.0")
 
 	testRuntimeOnly("com.h2database:h2")
-	testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
-	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+//	testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+//	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+//tasks.withType<Test> {
+//	useJUnitPlatform() // Это должно быть достаточно для обнаружения JUnit 5 тестов
+//	testLogging { // Оставляем для детального вывода
+//		events("passed", "skipped", "failed")
+//		exceptionFormat = TestExceptionFormat.FULL
+//		showStandardStreams = true
+//	}
+//	// УБЕРИ ВСЕ include, exclude, filter - пусть Gradle ищет тесты по умолчанию
+//}
+
+tasks.withType<Test> {
+	useJUnitPlatform() // Это должно быть достаточно для обнаружения JUnit 5 тестов
+	testLogging {
+		events("passed", "skipped", "failed")
+		exceptionFormat = TestExceptionFormat.FULL // Полный stack trace ошибок
+		showStandardStreams = true // Полезно видеть System.out/err из тестов
+	}
+	// Убери или закомментируй любые filter, includeClasses, include, exclude
 }
