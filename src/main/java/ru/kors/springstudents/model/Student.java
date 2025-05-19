@@ -1,6 +1,5 @@
 package ru.kors.springstudents.model;
 
-import com.fasterxml.jackson.core.JsonToken;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;

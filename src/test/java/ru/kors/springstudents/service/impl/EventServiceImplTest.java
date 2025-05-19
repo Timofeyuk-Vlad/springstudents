@@ -237,11 +237,10 @@ class EventServiceImplTest {
             .name("Updated Event Name")
             .description("Updated Desc")
             .date(LocalDateTime.now().plusDays(10))
-            .studentIds(List.of(student2.getId())) // Обновляем список студентов
+            .studentIds(List.of(student2.getId()))
             .build();
-        Event eventAfterMappingUpdate = new Event(); // Результат mapper.updateEntityFromDto
-        // ... его поля будут установлены ...
-        Event finalUpdatedEvent = Event.builder() // Результат repository.save
+        Event eventAfterMappingUpdate = new Event();
+        Event finalUpdatedEvent = Event.builder()
             .id(event1.getId())
             .name(updateDto.getName())
             .students(new HashSet<>(List.of(student2)))

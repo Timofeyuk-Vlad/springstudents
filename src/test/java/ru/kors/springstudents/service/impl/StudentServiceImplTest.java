@@ -34,8 +34,6 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 @DisplayName("StudentServiceImpl Tests")
 class StudentServiceImplTest {
-  // Логгер можно не использовать в тестах, если он не нужен для проверки логики
-  // private static final Logger log = LoggerFactory.getLogger(StudentServiceImplTest.class);
 
   @Mock
   private StudentRepository studentRepository;
