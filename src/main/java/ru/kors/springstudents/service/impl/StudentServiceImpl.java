@@ -13,6 +13,7 @@ import ru.kors.springstudents.dto.CreateStudentRequestDto;
 import ru.kors.springstudents.dto.StudentDetailsDto;
 import ru.kors.springstudents.dto.StudentSummaryDto;
 import ru.kors.springstudents.dto.UpdateStudentRequestDto;
+import ru.kors.springstudents.exception.DuplicateResourceException;
 import ru.kors.springstudents.exception.ResourceNotFoundException;
 import ru.kors.springstudents.mapper.StudentMapper;
 import ru.kors.springstudents.model.Event;
@@ -96,7 +97,7 @@ public class StudentServiceImpl implements StudentService {
             if (log.isWarnEnabled()) {
                 log.warn("Attempt to save student with existing email: {}", Encode.forJava(studentDto.getEmail()));
             }
-            throw new IllegalArgumentException(String.format(EMAIL_EXISTS_MSG, studentDto.getEmail()));
+            throw new DuplicateResourceException(String.format(EMAIL_EXISTS_MSG, studentDto.getEmail()));
         }
         Student student = mapper.toEntity(studentDto);
         Student savedStudent = repository.save(student);
@@ -136,11 +137,10 @@ public class StudentServiceImpl implements StudentService {
 
         if (!existingStudent.getEmail().equals(studentDto.getEmail()) &&
             repository.findStudentByEmail(studentDto.getEmail()) != null) {
-            // Проверяем уровень логирования перед кодированием и логированием
             if (log.isWarnEnabled()) {
                 log.warn("Attempt to update student ID: {} with email {} that already exists for another student", id, Encode.forJava(studentDto.getEmail()));
             }
-            throw new IllegalArgumentException(String.format(OTHER_EMAIL_EXISTS_MSG, studentDto.getEmail()));
+            throw new DuplicateResourceException(String.format(OTHER_EMAIL_EXISTS_MSG, studentDto.getEmail()));
         }
 
         mapper.updateEntityFromDto(studentDto, existingStudent);
@@ -213,7 +213,7 @@ public class StudentServiceImpl implements StudentService {
             .collect(Collectors.toSet());
         if (emailsInRequest.size() != studentDtos.size()) {
             log.warn("Duplicate emails found within the bulk request.");
-            throw new IllegalArgumentException("Duplicate emails found in the bulk request.");
+            throw new DuplicateResourceException("Duplicate emails found in the bulk request.");
         }
 
         for (CreateStudentRequestDto dto : studentDtos) {
@@ -221,7 +221,7 @@ public class StudentServiceImpl implements StudentService {
                 if (log.isWarnEnabled()) {
                     log.warn("Attempt to save student in bulk with existing email: {}", Encode.forJava(dto.getEmail()));
                 }
-                throw new IllegalArgumentException(String.format(EMAIL_EXISTS_MSG, dto.getEmail()));
+                throw new DuplicateResourceException(String.format(EMAIL_EXISTS_MSG, dto.getEmail()));
             }
         }
 

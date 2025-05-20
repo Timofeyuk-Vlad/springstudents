@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 
+
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -29,6 +30,35 @@ public class GlobalExceptionHandler {
                 null
         );
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<ErrorResponseDto> handleDuplicateResourceException(
+        DuplicateResourceException ex, WebRequest request) {
+        ErrorResponseDto errorResponse = new ErrorResponseDto(
+            LocalDateTime.now(),
+            HttpStatus.CONFLICT.value(), // Возвращаем 409 Conflict
+            HttpStatus.CONFLICT.getReasonPhrase(),
+            ex.getMessage(),
+            request.getDescription(false).replace("uri=", ""),
+            null
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponseDto> handleIllegalArgumentException(
+        IllegalArgumentException ex, WebRequest request) {
+        // Этот обработчик теперь может возвращать 400, если это не дубликат
+        ErrorResponseDto errorResponse = new ErrorResponseDto(
+            LocalDateTime.now(),
+            HttpStatus.BAD_REQUEST.value(),
+            HttpStatus.BAD_REQUEST.getReasonPhrase(),
+            ex.getMessage(),
+            request.getDescription(false).replace("uri=", ""),
+            null
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
