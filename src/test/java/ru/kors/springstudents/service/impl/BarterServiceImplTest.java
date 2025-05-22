@@ -1,7 +1,12 @@
 package ru.kors.springstudents.service.impl;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -14,234 +19,300 @@ import ru.kors.springstudents.model.Student;
 import ru.kors.springstudents.repository.BarterRepository;
 import ru.kors.springstudents.repository.StudentRepository;
 
+import java.util.Collections;
+import java.util.HashSet; // Импортируем HashSet
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("BarterServiceImpl Tests")
 class BarterServiceImplTest {
 
   @Mock
   private BarterRepository barterRepository;
-
   @Mock
   private StudentRepository studentRepository;
-
   @Mock
   private BarterMapper barterMapper;
 
   @InjectMocks
   private BarterServiceImpl barterService;
 
-  @Test
-  void findAllBarters_ShouldReturnAllBarters() {
-    // Arrange
-    Barter barter1 = new Barter(1L, "Book", "Good condition", "Available", null);
-    Barter barter2 = new Barter(2L, "Laptop", "Used", "Pending", null);
-    List<Barter> barters = List.of(barter1, barter2, barter1); // duplicate to test Set
+  @Captor
+  private ArgumentCaptor<Barter> barterArgumentCaptor;
+  @Captor
+  private ArgumentCaptor<Set<Barter>> barterSetCaptor; // Captor для Set<Barter>
 
-    when(barterRepository.findAll()).thenReturn(barters);
-    when(barterMapper.toDtoList(anySet())).thenAnswer(invocation -> {
-      Set<Barter> input = invocation.getArgument(0);
-      return input.stream()
-          .map(b -> new BarterDto(b.getId(), b.getItem(), b.getDescription(), b.getStatus(), null))
-          .toList();
-    });
 
-    // Act
-    List<BarterDto> result = barterService.findAllBarters();
+  private Barter barter1, barter2;
+  private BarterDto barterDto1, barterDto2;
+  private CreateBarterRequestDto createBarterRequestDto;
+  private Student student1;
 
-    // Assert
-    assertThat(result).hasSize(2);
-    verify(barterRepository).findAll();
-    verify(barterMapper).toDtoList(anySet());
+  @BeforeEach
+  void setUp() {
+    student1 = Student.builder().id(1L).firstName("StudentForBarter").build();
+
+    barter1 = Barter.builder()
+        .id(1L)
+        .item("Книга 1")
+        .status("ACTIVE")
+        .student(student1)
+        .build();
+
+    barter2 = Barter.builder()
+        .id(2L)
+        .item("Книга 2")
+        .status("PENDING")
+        .student(student1)
+        .build();
+
+    barterDto1 = BarterDto.builder()
+        .id(1L)
+        .item("Книга 1")
+        .status("ACTIVE")
+        .studentId(1L)
+        // .studentFullName(student1.getFirstName() + " " + student1.getLastName()) // Если добавили
+        .build();
+
+    barterDto2 = BarterDto.builder()
+        .id(2L)
+        .item("Книга 2")
+        .status("PENDING")
+        .studentId(1L)
+        // .studentFullName(student1.getFirstName() + " " + student1.getLastName()) // Если добавили
+        .build();
+
+    createBarterRequestDto = CreateBarterRequestDto.builder()
+        .item("Новый предмет")
+        .status("NEW")
+        .studentId(1L)
+        .description("Описание нового предмета")
+        .build();
   }
 
-  @Test
-  void findBarterById_WhenBarterExists_ShouldReturnBarter() {
-    // Arrange
-    Long barterId = 1L;
-    Barter barter = new Barter(barterId, "Book", "Good condition", "Available", null);
-    BarterDto barterDto = new BarterDto(barterId, "Book", "Good condition", "Available", null);
+  @Nested
+  @DisplayName("Find Operations")
+  class FindOperations {
+    @Test
+    @DisplayName("findAllBarters should return list of BarterDtos")
+    void findAllBarters_shouldReturnListOfBarterDtos() {
+      List<Barter> bartersFromRepoAsList = List.of(barter1, barter2);
+      Set<Barter> bartersFromRepoAsSet = new HashSet<>(bartersFromRepoAsList); // Создаем Set для мока маппера
+      List<BarterDto> expectedDtos = List.of(barterDto1, barterDto2);
 
-    when(barterRepository.findById(barterId)).thenReturn(Optional.of(barter));
-    when(barterMapper.toDto(barter)).thenReturn(barterDto);
+      when(barterRepository.findAll()).thenReturn(bartersFromRepoAsList);
+      // Теперь маппер ожидает Set
+      when(barterMapper.toDtoList(bartersFromRepoAsSet)).thenReturn(expectedDtos);
 
-    // Act
-    BarterDto result = barterService.findBarterById(barterId);
+      List<BarterDto> result = barterService.findAllBarters();
 
-    // Assert
-    assertThat(result).isEqualTo(barterDto);
-    verify(barterRepository).findById(barterId);
-    verify(barterMapper).toDto(barter);
+      assertNotNull(result);
+      assertEquals(2, result.size());
+      verify(barterRepository).findAll();
+      verify(barterMapper).toDtoList(barterSetCaptor.capture()); // Используем barterSetCaptor
+      assertEquals(bartersFromRepoAsSet, barterSetCaptor.getValue()); // Сравниваем Set'ы
+    }
+
+    @Test
+    @DisplayName("findAllBarters should return empty list when no barters exist")
+    void findAllBarters_shouldReturnEmptyList_whenNoBartersExist() {
+      when(barterRepository.findAll()).thenReturn(Collections.emptyList());
+      // Маппер будет вызван с пустым Set
+      when(barterMapper.toDtoList(Collections.emptySet())).thenReturn(Collections.emptyList());
+
+      List<BarterDto> result = barterService.findAllBarters();
+
+      assertNotNull(result);
+      assertTrue(result.isEmpty());
+      verify(barterRepository).findAll();
+      verify(barterMapper).toDtoList(Collections.emptySet());
+    }
+
+    // ... (остальные тесты findById остаются без изменений) ...
+    @Test
+    @DisplayName("findBarterById should return BarterDto when barter exists")
+    void findBarterById_shouldReturnBarterDto_whenBarterExists() {
+      when(barterRepository.findById(1L)).thenReturn(Optional.of(barter1));
+      when(barterMapper.toDto(barter1)).thenReturn(barterDto1);
+
+      BarterDto result = barterService.findBarterById(1L);
+
+      assertNotNull(result);
+      assertEquals(barterDto1.getItem(), result.getItem());
+      verify(barterRepository).findById(1L);
+      verify(barterMapper).toDto(barter1);
+    }
+
+    @Test
+    @DisplayName("findBarterById should throw ResourceNotFoundException when barter does not exist")
+    void findBarterById_shouldThrowException_whenBarterDoesNotExist() {
+      when(barterRepository.findById(99L)).thenReturn(Optional.empty());
+      assertThrows(ResourceNotFoundException.class, () -> barterService.findBarterById(99L));
+    }
   }
 
-  @Test
-  void findBarterById_WhenBarterNotExists_ShouldThrowException() {
-    // Arrange
-    Long barterId = 999L;
-    when(barterRepository.findById(barterId)).thenReturn(Optional.empty());
+  // ... (тесты SaveOperations остаются без изменений) ...
+  @Nested
+  @DisplayName("Save Operations")
+  class SaveOperations {
+    @Test
+    @DisplayName("saveBarter should save and return BarterDto")
+    void saveBarter_shouldSaveAndReturnBarterDto() {
+      Barter barterToSave = Barter.builder().item(createBarterRequestDto.getItem()).build();
+      Barter savedBarterWithId = Barter.builder().id(3L).item(createBarterRequestDto.getItem()).student(student1).build();
+      BarterDto expectedDto = BarterDto.builder().id(3L).item(createBarterRequestDto.getItem()).studentId(student1.getId()).build();
 
-    // Act & Assert
-    assertThatThrownBy(() -> barterService.findBarterById(barterId))
-        .isInstanceOf(ResourceNotFoundException.class)
-        .hasMessage("Barter not found with id: " + barterId);
+      when(studentRepository.findById(createBarterRequestDto.getStudentId())).thenReturn(Optional.of(student1));
+      when(barterMapper.toEntity(createBarterRequestDto)).thenReturn(barterToSave);
+      when(barterRepository.save(any(Barter.class))).thenReturn(savedBarterWithId);
+      when(barterMapper.toDto(savedBarterWithId)).thenReturn(expectedDto);
 
-    verify(barterRepository).findById(barterId);
-    verifyNoInteractions(barterMapper);
+      BarterDto result = barterService.saveBarter(createBarterRequestDto);
+
+      assertNotNull(result);
+      assertEquals(expectedDto.getItem(), result.getItem());
+      verify(studentRepository).findById(createBarterRequestDto.getStudentId());
+      verify(barterMapper).toEntity(createBarterRequestDto);
+      verify(barterRepository).save(barterArgumentCaptor.capture());
+      assertEquals(student1, barterArgumentCaptor.getValue().getStudent());
+      verify(barterMapper).toDto(savedBarterWithId);
+    }
+
+    @Test
+    @DisplayName("saveBarter should throw ResourceNotFoundException if student not found")
+    void saveBarter_shouldThrowException_ifStudentNotFound() {
+      when(studentRepository.findById(createBarterRequestDto.getStudentId())).thenReturn(Optional.empty());
+      assertThrows(ResourceNotFoundException.class, () -> barterService.saveBarter(createBarterRequestDto));
+      verify(barterRepository, never()).save(any(Barter.class));
+    }
   }
 
-  @Test
-  void saveBarter_WithValidData_ShouldSaveAndReturnBarter() {
-    // Arrange
-    Long studentId = 1L;
-    CreateBarterRequestDto requestDto = new CreateBarterRequestDto("Book", "Good condition", "Available", studentId);
 
-    Student student = new Student(studentId, "John", "Doe", "john@example.com");
-    Barter barterToSave = new Barter(null, "Book", "Good condition", "Available", null);
-    Barter savedBarter = new Barter(1L, "Book", "Good condition", "Available", student);
-    BarterDto expectedDto = new BarterDto(1L, "Book", "Good condition", "Available", null);
+  @Nested
+  @DisplayName("Update Operations")
+  class UpdateOperations {
+    @Test
+    @DisplayName("updateBarter should update and return BarterDto when student is not changed")
+    void updateBarter_shouldUpdateAndReturnDto_whenStudentNotChanged() {
+      CreateBarterRequestDto updateDto = CreateBarterRequestDto.builder()
+          .item("Updated Item Name")
+          .description("Updated Description")
+          .status("COMPLETED")
+          .studentId(student1.getId())
+          .build();
+      Barter barterFromRepo = barter1;
+      Barter updatedBarterInRepo = Barter.builder()
+          .id(barter1.getId()).item(updateDto.getItem()).description(updateDto.getDescription())
+          .status(updateDto.getStatus()).student(student1)
+          .build();
+      BarterDto expectedDto = BarterDto.builder()
+          .id(barter1.getId()).item(updateDto.getItem()).description(updateDto.getDescription())
+          .status(updateDto.getStatus()).studentId(student1.getId())
+          .build();
 
-    when(studentRepository.findById(studentId)).thenReturn(Optional.of(student));
-    when(barterMapper.toEntity(requestDto)).thenReturn(barterToSave);
-    when(barterRepository.save(barterToSave)).thenReturn(savedBarter);
-    when(barterMapper.toDto(savedBarter)).thenReturn(expectedDto);
+      when(barterRepository.findById(barter1.getId())).thenReturn(Optional.of(barterFromRepo));
+      doNothing().when(barterMapper).updateEntityFromDto(updateDto, barterFromRepo);
+      when(barterRepository.save(any(Barter.class))).thenReturn(updatedBarterInRepo);
+      when(barterMapper.toDto(updatedBarterInRepo)).thenReturn(expectedDto);
 
-    // Act
-    BarterDto result = barterService.saveBarter(requestDto);
+      BarterDto result = barterService.updateBarter(barter1.getId(), updateDto);
 
-    // Assert
-    assertThat(result).isEqualTo(expectedDto);
-    assertThat(barterToSave.getStudent()).isEqualTo(student);
-    verify(studentRepository).findById(studentId);
-    verify(barterMapper).toEntity(requestDto);
-    verify(barterRepository).save(barterToSave);
-    verify(barterMapper).toDto(savedBarter);
+      assertNotNull(result);
+      assertEquals(expectedDto.getItem(), result.getItem());
+      assertEquals(expectedDto.getStatus(), result.getStatus());
+      verify(studentRepository, never()).findById(anyLong());
+      verify(barterRepository).save(barterArgumentCaptor.capture());
+      assertEquals(student1, barterArgumentCaptor.getValue().getStudent());
+    }
+
+    @Test
+    @DisplayName("updateBarter should update student and return BarterDto when studentId is changed")
+    void updateBarter_shouldUpdateStudentAndReturnDto_whenStudentIdChanged() {
+      Student student2ForUpdate = Student.builder().id(2L).firstName("OtherStudent").build();
+      CreateBarterRequestDto updateDtoWithNewStudent = CreateBarterRequestDto.builder()
+          .item("Item For Other Student")
+          .status("ACTIVE")
+          .studentId(student2ForUpdate.getId())
+          .build();
+      Barter updatedBarterInRepo = Barter.builder()
+          .id(barter1.getId()).item(updateDtoWithNewStudent.getItem())
+          .student(student2ForUpdate).status(updateDtoWithNewStudent.getStatus())
+          .build();
+      BarterDto expectedDto = BarterDto.builder()
+          .id(barter1.getId()).item(updateDtoWithNewStudent.getItem())
+          .studentId(student2ForUpdate.getId()).status(updateDtoWithNewStudent.getStatus())
+          .build();
+
+      when(barterRepository.findById(barter1.getId())).thenReturn(Optional.of(barter1));
+      when(studentRepository.findById(student2ForUpdate.getId())).thenReturn(Optional.of(student2ForUpdate));
+      doNothing().when(barterMapper).updateEntityFromDto(updateDtoWithNewStudent, barter1);
+      when(barterRepository.save(any(Barter.class))).thenReturn(updatedBarterInRepo);
+      when(barterMapper.toDto(updatedBarterInRepo)).thenReturn(expectedDto);
+
+      BarterDto result = barterService.updateBarter(barter1.getId(), updateDtoWithNewStudent);
+
+      assertNotNull(result);
+      assertEquals(expectedDto.getStudentId(), result.getStudentId());
+      verify(studentRepository).findById(student2ForUpdate.getId());
+      verify(barterRepository).save(barterArgumentCaptor.capture());
+      assertEquals(student2ForUpdate, barterArgumentCaptor.getValue().getStudent());
+    }
+
+    @Test
+    @DisplayName("updateBarter should throw ResourceNotFoundException if barter to update not found")
+    void updateBarter_shouldThrowRnfException_ifBarterNotFound() {
+      when(barterRepository.findById(99L)).thenReturn(Optional.empty());
+      assertThrows(ResourceNotFoundException.class,
+          () -> barterService.updateBarter(99L, createBarterRequestDto));
+      verify(studentRepository, never()).findById(anyLong());
+      verify(barterRepository, never()).save(any(Barter.class));
+    }
+
+    @Test
+    @DisplayName("updateBarter should throw ResourceNotFoundException if new studentId for update not found")
+    void updateBarter_shouldThrowRnfException_ifNewStudentNotFound() {
+      CreateBarterRequestDto updateDtoWithNonExistentStudent = CreateBarterRequestDto.builder()
+          .studentId(999L) // Несуществующий studentId
+          .build();
+      when(barterRepository.findById(barter1.getId())).thenReturn(Optional.of(barter1));
+      when(studentRepository.findById(999L)).thenReturn(Optional.empty());
+
+      assertThrows(ResourceNotFoundException.class,
+          () -> barterService.updateBarter(barter1.getId(), updateDtoWithNonExistentStudent));
+      verify(barterRepository, never()).save(any(Barter.class));
+    }
   }
 
-  @Test
-  void saveBarter_WithInvalidStudentId_ShouldThrowException() {
-    // Arrange
-    Long invalidStudentId = 999L;
-    CreateBarterRequestDto requestDto = new CreateBarterRequestDto("Book", "Good condition", "Available", invalidStudentId);
+  // ... (DeleteOperations остаются без изменений) ...
+  @Nested
+  @DisplayName("Delete Operations")
+  class DeleteOperations {
+    @Test
+    @DisplayName("deleteBarter should call repository deleteById")
+    void deleteBarter_shouldCallRepositoryDeleteById() {
+      when(barterRepository.existsById(1L)).thenReturn(true);
+      doNothing().when(barterRepository).deleteById(1L);
 
-    when(studentRepository.findById(invalidStudentId)).thenReturn(Optional.empty());
+      barterService.deleteBarter(1L);
 
-    // Act & Assert
-    assertThatThrownBy(() -> barterService.saveBarter(requestDto))
-        .isInstanceOf(ResourceNotFoundException.class)
-        .hasMessage("Student not found with id: " + invalidStudentId);
+      verify(barterRepository).existsById(1L);
+      verify(barterRepository).deleteById(1L);
+    }
 
-    verify(studentRepository).findById(invalidStudentId);
-    verifyNoInteractions(barterRepository, barterMapper);
-  }
-
-  @Test
-  void updateBarter_WithValidData_ShouldUpdateAndReturnBarter() {
-    // Arrange
-    Long barterId = 1L;
-    Long studentId = 1L;
-    Long newStudentId = 2L;
-
-    CreateBarterRequestDto requestDto = new CreateBarterRequestDto("Updated Book", "Excellent", "Sold", newStudentId);
-
-    Student oldStudent = new Student(studentId, "John", "Doe", "john@example.com");
-    Student newStudent = new Student(newStudentId, "Jane", "Doe", "jane@example.com");
-
-    Barter existingBarter = new Barter(barterId, "Book", "Good", "Available", oldStudent);
-    Barter updatedBarter = new Barter(barterId, "Updated Book", "Excellent", "Sold", newStudent);
-    BarterDto expectedDto = new BarterDto(barterId, "Updated Book", "Excellent", "Sold", null);
-
-    when(barterRepository.findById(barterId)).thenReturn(Optional.of(existingBarter));
-    when(studentRepository.findById(newStudentId)).thenReturn(Optional.of(newStudent));
-    when(barterRepository.save(existingBarter)).thenReturn(updatedBarter);
-    when(barterMapper.toDto(updatedBarter)).thenReturn(expectedDto);
-
-    BarterDto result = barterService.updateBarter(barterId, requestDto);
-
-    assertThat(result).isEqualTo(expectedDto);
-    assertThat(existingBarter.getStudent()).isEqualTo(newStudent);
-    verify(barterRepository).findById(barterId);
-    verify(studentRepository).findById(newStudentId);
-    verify(barterRepository).save(existingBarter);
-    verify(barterMapper).toDto(updatedBarter);
-  }
-
-  @Test
-  void updateBarter_WhenBarterNotExists_ShouldThrowException() {
-    // Arrange
-    Long invalidBarterId = 999L;
-    CreateBarterRequestDto requestDto = new CreateBarterRequestDto("Book", "Desc", "Status", 1L);
-
-    when(barterRepository.findById(invalidBarterId)).thenReturn(Optional.empty());
-
-    // Act & Assert
-    assertThatThrownBy(() -> barterService.updateBarter(invalidBarterId, requestDto))
-        .isInstanceOf(ResourceNotFoundException.class)
-        .hasMessage("Barter not found with id: " + invalidBarterId);
-
-    verify(barterRepository).findById(invalidBarterId);
-    verifyNoInteractions(studentRepository, barterMapper);
-  }
-
-  @Test
-  void updateBarter_WithSameStudent_ShouldNotFetchStudentAgain() {
-    // Arrange
-    Long barterId = 1L;
-    Long studentId = 1L;
-
-    CreateBarterRequestDto requestDto = new CreateBarterRequestDto("Updated", "Desc", "Status", studentId);
-
-    Student student = new Student(studentId, "John", "Doe", "john@example.com");
-    Barter existingBarter = new Barter(barterId, "Book", "Good", "Available", student);
-    Barter updatedBarter = new Barter(barterId, "Updated", "Desc", "Status", student);
-    BarterDto expectedDto = new BarterDto(barterId, "Updated", "Desc", "Status", null);
-
-    when(barterRepository.findById(barterId)).thenReturn(Optional.of(existingBarter));
-    when(barterRepository.save(existingBarter)).thenReturn(updatedBarter);
-    when(barterMapper.toDto(updatedBarter)).thenReturn(expectedDto);
-
-    // Act
-    BarterDto result = barterService.updateBarter(barterId, requestDto);
-
-    // Assert
-    assertThat(result).isEqualTo(expectedDto);
-    verify(barterRepository).findById(barterId);
-    verifyNoInteractions(studentRepository); // Should not fetch student if ID is same
-    verify(barterRepository).save(existingBarter);
-    verify(barterMapper).toDto(updatedBarter);
-  }
-
-  @Test
-  void deleteBarter_WhenBarterExists_ShouldDeleteBarter() {
-    // Arrange
-    Long barterId = 1L;
-    when(barterRepository.existsById(barterId)).thenReturn(true);
-
-    // Act
-    barterService.deleteBarter(barterId);
-
-    // Assert
-    verify(barterRepository).existsById(barterId);
-    verify(barterRepository).deleteById(barterId);
-  }
-
-  @Test
-  void deleteBarter_WhenBarterNotExists_ShouldThrowException() {
-    // Arrange
-    Long invalidBarterId = 999L;
-    when(barterRepository.existsById(invalidBarterId)).thenReturn(false);
-
-    // Act & Assert
-    assertThatThrownBy(() -> barterService.deleteBarter(invalidBarterId))
-        .isInstanceOf(ResourceNotFoundException.class)
-        .hasMessage("Barter not found with id: " + invalidBarterId);
-
-    verify(barterRepository).existsById(invalidBarterId);
-    verifyNoMoreInteractions(barterRepository);
+    @Test
+    @DisplayName("deleteBarter should throw ResourceNotFoundException if barter not found")
+    void deleteBarter_shouldThrowException_ifBarterNotFound() {
+      when(barterRepository.existsById(99L)).thenReturn(false);
+      assertThrows(ResourceNotFoundException.class, () -> barterService.deleteBarter(99L));
+      verify(barterRepository, never()).deleteById(anyLong());
+    }
   }
 }

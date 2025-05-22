@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import ru.kors.springstudents.cache.StudentCache;
 import ru.kors.springstudents.dto.*;
 import ru.kors.springstudents.exception.ResourceNotFoundException;
+import ru.kors.springstudents.exception.DuplicateResourceException;
 import ru.kors.springstudents.mapper.StudentMapper;
 import ru.kors.springstudents.model.Event;
 import ru.kors.springstudents.model.Student;
@@ -260,13 +261,12 @@ class StudentServiceImplTest {
     }
 
     @Test
-    @DisplayName("saveStudent should throw IllegalArgumentException when email exists")
+    @DisplayName("saveStudent should throw DuplicateResourceException when email exists")
     void saveStudent_shouldThrowException_whenEmailExists() {
       when(studentRepository.findStudentByEmail(createStudentRequestDto1.getEmail())).thenReturn(new Student());
-      assertThrows(IllegalArgumentException.class, () -> studentService.saveStudent(createStudentRequestDto1));
+      assertThrows(DuplicateResourceException.class, () -> studentService.saveStudent(createStudentRequestDto1));
     }
 
-    // --- Тесты для saveStudentsBulk ---
     @Test
     @DisplayName("saveStudentsBulk should save each student and put them to cache")
     void saveStudentsBulk_shouldSaveEachAndCache() {
@@ -300,18 +300,18 @@ class StudentServiceImplTest {
     }
 
     @Test
-    @DisplayName("saveStudentsBulk should throw if duplicate email in request")
+    @DisplayName("saveStudentsBulk should throw DuplicateResourceException if duplicate email in request")
     void saveStudentsBulk_duplicateEmailInRequest_shouldThrow() {
-      List<CreateStudentRequestDto> requestDtos = List.of(createStudentRequestDto1, createStudentRequestDto1); // Дубликат
-      assertThrows(IllegalArgumentException.class, () -> studentService.saveStudentsBulk(requestDtos));
+      List<CreateStudentRequestDto> requestDtos = List.of(createStudentRequestDto1, createStudentRequestDto1);
+      assertThrows(DuplicateResourceException.class, () -> studentService.saveStudentsBulk(requestDtos));
     }
 
     @Test
-    @DisplayName("saveStudentsBulk should throw if email exists in DB")
+    @DisplayName("saveStudentsBulk should throw DuplicateResourceException if email exists in DB")
     void saveStudentsBulk_emailExistsInDb_shouldThrow() {
       when(studentRepository.findStudentByEmail(createStudentRequestDto1.getEmail())).thenReturn(new Student());
       List<CreateStudentRequestDto> requestDtos = List.of(createStudentRequestDto1);
-      assertThrows(IllegalArgumentException.class, () -> studentService.saveStudentsBulk(requestDtos));
+      assertThrows(DuplicateResourceException.class, () -> studentService.saveStudentsBulk(requestDtos));
     }
 
     @Test
@@ -359,13 +359,13 @@ class StudentServiceImplTest {
     }
 
     @Test
-    @DisplayName("updateStudent should throw IllegalArgumentException when new email is taken by another student")
+    @DisplayName("updateStudent should throw DuplicateResourceException when new email is taken by another student")
     void updateStudent_shouldThrowException_whenNewEmailIsTaken() {
       Student otherStudent = Student.builder().id(2L).email(updateStudentRequestDto1.getEmail()).build();
-      when(studentRepository.findById(1L)).thenReturn(Optional.of(student1));
+      when(studentRepository.findById(1L)).thenReturn(Optional.of(student1)); // Наш студент
       when(studentRepository.findStudentByEmail(updateStudentRequestDto1.getEmail())).thenReturn(otherStudent);
-
-      assertThrows(IllegalArgumentException.class, () -> studentService.updateStudent(1L, updateStudentRequestDto1));
+      assertThrows(DuplicateResourceException.class,
+          () -> studentService.updateStudent(1L, updateStudentRequestDto1));
     }
 
     @Test
@@ -448,6 +448,32 @@ class StudentServiceImplTest {
         assertNotNull(result);
         assertEquals(2, result.size());
         verify(studentRepository).findStudentsByEventNameJpql(eventName);
+      }
+
+      @Test
+      @DisplayName("deleteStudent should proceed if student has no events")
+      void deleteStudent_shouldProceed_ifStudentHasNoEvents() {
+        student1.setEvents(Collections.emptySet()); // У студента нет событий
+        when(studentRepository.findById(1L)).thenReturn(Optional.of(student1));
+        doNothing().when(studentRepository).delete(student1);
+
+        assertDoesNotThrow(() -> studentService.deleteStudent(1L));
+
+        verify(studentRepository).delete(student1);
+        verify(studentCache).evict(1L);
+      }
+
+      @Test
+      @DisplayName("deleteStudent should proceed correctly if student has no events to clear")
+      void deleteStudent_whenStudentHasNoEvents_shouldDeleteAndEvict() {
+        student1.setEvents(Collections.emptySet());
+        when(studentRepository.findById(1L)).thenReturn(Optional.of(student1));
+        doNothing().when(studentRepository).delete(student1);
+
+        studentService.deleteStudent(1L);
+
+        verify(studentRepository).delete(student1);
+        verify(studentCache).evict(1L);
       }
 
       @Test

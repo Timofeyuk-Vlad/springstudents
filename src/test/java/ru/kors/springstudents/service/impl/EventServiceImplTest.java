@@ -30,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,6 +49,8 @@ class EventServiceImplTest {
 
   @Captor
   private ArgumentCaptor<Event> eventArgumentCaptor;
+  @Captor
+  private ArgumentCaptor<Set<Event>> eventSetCaptor; // Для проверки toDtoList
 
   private Event event1, event2;
   private EventDto eventDto1, eventDto2;
@@ -56,8 +59,8 @@ class EventServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    student1 = Student.builder().id(1L).firstName("Student1").build();
-    student2 = Student.builder().id(2L).firstName("Student2").build();
+    student1 = Student.builder().id(1L).firstName("Student1").email("s1@e.com").build();
+    student2 = Student.builder().id(2L).firstName("Student2").email("s2@e.com").build();
 
     event1 = Event.builder()
         .id(1L)
@@ -106,17 +109,30 @@ class EventServiceImplTest {
     @DisplayName("findAllEvents should return list of EventDtos")
     void findAllEvents_shouldReturnListOfEventDtos() {
       when(eventRepository.findAll()).thenReturn(List.of(event1, event2));
-      when(eventMapper.toDtoList(anySet())).thenReturn(List.of(eventDto1, eventDto2)); // anySet() т.к. мы конвертируем в Set
+      when(eventMapper.toDtoList(anySet())).thenReturn(List.of(eventDto1, eventDto2));
 
       List<EventDto> result = eventService.findAllEvents();
 
       assertNotNull(result);
       assertEquals(2, result.size());
       verify(eventRepository).findAll();
-      // Проверяем, что в маппер передался Set
-      ArgumentCaptor<Set<Event>> setCaptor = ArgumentCaptor.forClass(Set.class);
-      verify(eventMapper).toDtoList(setCaptor.capture());
-      assertTrue(setCaptor.getValue().containsAll(List.of(event1, event2)));
+      verify(eventMapper).toDtoList(eventSetCaptor.capture());
+      assertTrue(eventSetCaptor.getValue().containsAll(List.of(event1, event2)));
+      assertEquals(2, eventSetCaptor.getValue().size());
+    }
+
+    @Test
+    @DisplayName("findAllEvents should return empty list when no events exist")
+    void findAllEvents_shouldReturnEmptyList_whenNoEventsExist() {
+      when(eventRepository.findAll()).thenReturn(Collections.emptyList());
+      when(eventMapper.toDtoList(Collections.emptySet())).thenReturn(Collections.emptyList());
+
+      List<EventDto> result = eventService.findAllEvents();
+
+      assertNotNull(result);
+      assertTrue(result.isEmpty());
+      verify(eventRepository).findAll();
+      verify(eventMapper).toDtoList(Collections.emptySet());
     }
 
     @Test
@@ -149,29 +165,29 @@ class EventServiceImplTest {
     @Test
     @DisplayName("saveEvent should save and return EventDto")
     void saveEvent_shouldSaveAndReturnEventDto() {
-      Event eventToSave = Event.builder() // Сущность, которую вернет mapper.toEntity
+      Event eventToSave = Event.builder()
           .name(createEventRequestDto.getName())
           .description(createEventRequestDto.getDescription())
           .date(createEventRequestDto.getDate())
-          .build(); // students установятся позже
-
-      Event savedEventWithId = Event.builder() // Сущность, которую вернет repository.save
-          .id(3L)
-          .name(createEventRequestDto.getName())
-          .description(createEventRequestDto.getDescription())
-          .date(createEventRequestDto.getDate())
-          .students(new HashSet<>(List.of(student1, student2))) // Студенты уже добавлены
           .build();
 
-      EventDto expectedDto = EventDto.builder() // Ожидаемый DTO
+      Event savedEventWithId = Event.builder()
+          .id(3L) // Предполагаем новый ID
+          .name(createEventRequestDto.getName())
+          .description(createEventRequestDto.getDescription())
+          .date(createEventRequestDto.getDate())
+          .students(new HashSet<>(List.of(student1, student2)))
+          .build();
+
+      EventDto expectedDto = EventDto.builder()
           .id(3L)
           .name(createEventRequestDto.getName())
           .studentIds(createEventRequestDto.getStudentIds())
           .build();
 
       when(studentRepository.findAllById(createEventRequestDto.getStudentIds())).thenReturn(List.of(student1, student2));
-      when(eventMapper.toEntity(createEventRequestDto)).thenReturn(eventToSave); // Изначально без студентов
-      when(eventRepository.save(any(Event.class))).thenReturn(savedEventWithId); // save возвращает с ID и студентами
+      when(eventMapper.toEntity(createEventRequestDto)).thenReturn(eventToSave);
+      when(eventRepository.save(any(Event.class))).thenReturn(savedEventWithId);
       when(eventMapper.toDto(savedEventWithId)).thenReturn(expectedDto);
 
       EventDto result = eventService.saveEvent(createEventRequestDto);
@@ -183,37 +199,25 @@ class EventServiceImplTest {
       verify(studentRepository).findAllById(createEventRequestDto.getStudentIds());
       verify(eventMapper).toEntity(createEventRequestDto);
       verify(eventRepository).save(eventArgumentCaptor.capture());
-      assertEquals(2, eventArgumentCaptor.getValue().getStudents().size()); // Проверяем, что студенты были установлены перед save
+      Event capturedEvent = eventArgumentCaptor.getValue();
+      assertEquals(createEventRequestDto.getName(), capturedEvent.getName());
+      assertTrue(capturedEvent.getStudents().containsAll(List.of(student1, student2)));
       verify(eventMapper).toDto(savedEventWithId);
     }
 
-    @Test
-    @DisplayName("saveEvent should throw ResourceNotFoundException if any student ID not found")
-    void saveEvent_shouldThrowException_ifAnyStudentNotFound() {
-      when(studentRepository.findAllById(createEventRequestDto.getStudentIds()))
-          .thenReturn(List.of(student1)); // Вернули только одного студента вместо двух
-
-      when(eventMapper.toEntity(createEventRequestDto)).thenReturn(new Event());
-
-      assertThrows(ResourceNotFoundException.class, () -> eventService.saveEvent(createEventRequestDto));
-      verify(eventRepository, never()).save(any(Event.class));
-    }
-
-    // EventServiceImplTest.java
     @Test
     @DisplayName("saveEvent with no student IDs should save event with empty student list")
     void saveEvent_withNoStudentIds_shouldSaveEventWithEmptyStudentList() {
       CreateEventRequestDto dtoWithoutStudents = CreateEventRequestDto.builder()
           .name("Solo Event")
           .date(LocalDateTime.now().plusDays(1))
-          .studentIds(Collections.emptyList()) // Пустой список ID
+          .studentIds(Collections.emptyList())
           .build();
-      Event eventToSave = Event.builder().name("Solo Event").students(new HashSet<>()).build(); // Устанавливаем пустой Set
-      Event savedEvent = Event.builder().id(1L).name("Solo Event").students(new HashSet<>()).build();
-      EventDto expectedDto = EventDto.builder().id(1L).name("Solo Event").studentIds(Collections.emptyList()).build();
+      Event eventToSave = Event.builder().name("Solo Event").students(new HashSet<>()).date(dtoWithoutStudents.getDate()).build();
+      Event savedEvent = Event.builder().id(1L).name("Solo Event").students(new HashSet<>()).date(dtoWithoutStudents.getDate()).build();
+      EventDto expectedDto = EventDto.builder().id(1L).name("Solo Event").studentIds(Collections.emptyList()).date(dtoWithoutStudents.getDate()).build();
 
       when(eventMapper.toEntity(dtoWithoutStudents)).thenReturn(eventToSave);
-      // Ожидаем, что findAllById будет вызван с пустым списком и вернет пустой список
       when(studentRepository.findAllById(Collections.emptyList())).thenReturn(Collections.emptyList());
       when(eventRepository.save(eventToSave)).thenReturn(savedEvent);
       when(eventMapper.toDto(savedEvent)).thenReturn(expectedDto);
@@ -222,97 +226,105 @@ class EventServiceImplTest {
 
       assertNotNull(result);
       assertTrue(result.getStudentIds().isEmpty());
-      // Проверяем, что findAllById был вызван с пустым списком
-      verify(studentRepository, times(1)).findAllById(Collections.emptyList());
+      verify(studentRepository).findAllById(Collections.emptyList());
       verify(eventRepository).save(eventToSave);
     }
 
-    @Nested
-    @DisplayName("Update Operations")
-    class UpdateOperations {
-      @Test
-      @DisplayName("updateEvent should update and return EventDto")
-      void updateEvent_shouldUpdateAndReturnEventDto() {
-        CreateEventRequestDto updateDto = CreateEventRequestDto.builder()
-            .name("Updated Event Name")
-            .description("Updated Desc")
-            .date(LocalDateTime.now().plusDays(10))
-            .studentIds(List.of(student2.getId()))
-            .build();
-        Event eventAfterMappingUpdate = new Event();
-        Event finalUpdatedEvent = Event.builder()
-            .id(event1.getId())
-            .name(updateDto.getName())
-            .students(new HashSet<>(List.of(student2)))
-            .build();
-        EventDto expectedUpdatedDto = EventDto.builder()
-            .id(event1.getId())
-            .name(updateDto.getName())
-            .studentIds(List.of(student2.getId()))
-            .build();
+    @Test
+    @DisplayName("saveEvent should throw ResourceNotFoundException if any student ID not found")
+    void saveEvent_shouldThrowException_ifAnyStudentNotFound() {
+      when(studentRepository.findAllById(createEventRequestDto.getStudentIds())).thenReturn(List.of(student1)); // Вернули только одного
+      when(eventMapper.toEntity(createEventRequestDto)).thenReturn(new Event());
 
-        when(eventRepository.findById(event1.getId())).thenReturn(Optional.of(event1));
-        // void метод mapper.updateEntityFromDto не нужно мокировать через when, он просто вызовется
-        when(studentRepository.findAllById(updateDto.getStudentIds())).thenReturn(List.of(student2));
-        when(eventRepository.save(any(Event.class))).thenReturn(finalUpdatedEvent);
-        when(eventMapper.toDto(finalUpdatedEvent)).thenReturn(expectedUpdatedDto);
+      assertThrows(ResourceNotFoundException.class, () -> eventService.saveEvent(createEventRequestDto));
+      verify(eventRepository, never()).save(any(Event.class));
+    }
+  }
 
-        EventDto result = eventService.updateEvent(event1.getId(), updateDto);
+  @Nested
+  @DisplayName("Update Operations")
+  class UpdateOperations {
+    @Test
+    @DisplayName("updateEvent should update and return EventDto")
+    void updateEvent_shouldUpdateAndReturnEventDto() {
+      CreateEventRequestDto updateDto = CreateEventRequestDto.builder()
+          .name("Updated Name")
+          .studentIds(List.of(student2.getId())) // Только student2
+          .date(LocalDateTime.now().plusHours(1))
+          .build();
 
-        assertNotNull(result);
-        assertEquals(expectedUpdatedDto.getName(), result.getName());
-        assertEquals(expectedUpdatedDto.getStudentIds(), result.getStudentIds());
+      Event eventFromRepo = event1; // Обновляем event1
+      Event updatedEventInRepo = Event.builder() // То, что вернет save
+          .id(event1.getId())
+          .name(updateDto.getName())
+          .students(new HashSet<>(List.of(student2)))
+          .date(updateDto.getDate())
+          .build();
+      EventDto expectedDto = EventDto.builder()
+          .id(event1.getId())
+          .name(updateDto.getName())
+          .studentIds(List.of(student2.getId()))
+          .date(updateDto.getDate())
+          .build();
 
-        verify(eventRepository).findById(event1.getId());
-        verify(eventMapper).updateEntityFromDto(updateDto, event1);
-        verify(studentRepository).findAllById(updateDto.getStudentIds());
-        verify(eventRepository).save(eventArgumentCaptor.capture());
-        assertTrue(eventArgumentCaptor.getValue().getStudents().contains(student2));
-        assertEquals(1, eventArgumentCaptor.getValue().getStudents().size());
-        verify(eventMapper).toDto(finalUpdatedEvent);
-      }
+      when(eventRepository.findById(event1.getId())).thenReturn(Optional.of(eventFromRepo));
+      doNothing().when(eventMapper).updateEntityFromDto(updateDto, eventFromRepo); // Для void методов
+      when(studentRepository.findAllById(List.of(student2.getId()))).thenReturn(List.of(student2));
+      when(eventRepository.save(any(Event.class))).thenReturn(updatedEventInRepo);
+      when(eventMapper.toDto(updatedEventInRepo)).thenReturn(expectedDto);
 
-      @Test
-      @DisplayName("updateEvent should throw ResourceNotFoundException if event not found")
-      void updateEvent_shouldThrowException_ifEventNotFound() {
-        when(eventRepository.findById(99L)).thenReturn(Optional.empty());
-        assertThrows(ResourceNotFoundException.class, () -> eventService.updateEvent(99L, createEventRequestDto));
-      }
+      EventDto result = eventService.updateEvent(event1.getId(), updateDto);
 
-      @Test
-      @DisplayName("updateEvent should throw ResourceNotFoundException if any student ID not found")
-      void updateEvent_shouldThrowException_ifAnyStudentNotFoundForUpdate() {
-        when(eventRepository.findById(event1.getId())).thenReturn(Optional.of(event1));
-        when(studentRepository.findAllById(createEventRequestDto.getStudentIds()))
-            .thenReturn(List.of(student1)); // Вернули только одного вместо двух
+      assertNotNull(result);
+      assertEquals(expectedDto.getName(), result.getName());
+      assertEquals(expectedDto.getStudentIds(), result.getStudentIds());
 
-        assertThrows(ResourceNotFoundException.class, () -> eventService.updateEvent(event1.getId(), createEventRequestDto));
-        verify(eventRepository, never()).save(any(Event.class));
-      }
+      verify(eventMapper).updateEntityFromDto(updateDto, eventFromRepo);
+      verify(eventRepository).save(eventArgumentCaptor.capture());
+      assertTrue(eventArgumentCaptor.getValue().getStudents().contains(student2));
+      assertEquals(1, eventArgumentCaptor.getValue().getStudents().size());
     }
 
-    @Nested
-    @DisplayName("Delete Operations")
-    class DeleteOperations {
-      @Test
-      @DisplayName("deleteEvent should call repository deleteById")
-      void deleteEvent_shouldCallRepositoryDeleteById() {
-        when(eventRepository.existsById(1L)).thenReturn(true);
-        doNothing().when(eventRepository).deleteById(1L);
+    @Test
+    @DisplayName("updateEvent should throw ResourceNotFoundException if event not found")
+    void updateEvent_shouldThrowException_ifEventNotFound() {
+      when(eventRepository.findById(99L)).thenReturn(Optional.empty());
+      assertThrows(ResourceNotFoundException.class, () -> eventService.updateEvent(99L, createEventRequestDto));
+    }
 
-        eventService.deleteEvent(1L);
+    @Test
+    @DisplayName("updateEvent should throw ResourceNotFoundException if any student for update not found")
+    void updateEvent_shouldThrowException_ifAnyStudentForUpdateNotFound() {
+      when(eventRepository.findById(event1.getId())).thenReturn(Optional.of(event1));
+      //findAllById вернет пустой список, а в DTO есть ID
+      when(studentRepository.findAllById(createEventRequestDto.getStudentIds())).thenReturn(Collections.emptyList());
 
-        verify(eventRepository).existsById(1L);
-        verify(eventRepository).deleteById(1L);
-      }
+      assertThrows(ResourceNotFoundException.class, () -> eventService.updateEvent(event1.getId(), createEventRequestDto));
+      verify(eventRepository, never()).save(any(Event.class));
+    }
+  }
 
-      @Test
-      @DisplayName("deleteEvent should throw ResourceNotFoundException if event not found")
-      void deleteEvent_shouldThrowException_ifEventNotFound() {
-        when(eventRepository.existsById(99L)).thenReturn(false);
-        assertThrows(ResourceNotFoundException.class, () -> eventService.deleteEvent(99L));
-        verify(eventRepository, never()).deleteById(anyLong());
-      }
+  @Nested
+  @DisplayName("Delete Operations")
+  class DeleteOperations {
+    @Test
+    @DisplayName("deleteEvent should call repository deleteById")
+    void deleteEvent_shouldCallRepositoryDeleteById() {
+      when(eventRepository.existsById(1L)).thenReturn(true);
+      doNothing().when(eventRepository).deleteById(1L);
+
+      eventService.deleteEvent(1L);
+
+      verify(eventRepository).existsById(1L);
+      verify(eventRepository).deleteById(1L);
+    }
+
+    @Test
+    @DisplayName("deleteEvent should throw ResourceNotFoundException if event not found")
+    void deleteEvent_shouldThrowException_ifEventNotFound() {
+      when(eventRepository.existsById(99L)).thenReturn(false);
+      assertThrows(ResourceNotFoundException.class, () -> eventService.deleteEvent(99L));
+      verify(eventRepository, never()).deleteById(anyLong());
     }
   }
 }

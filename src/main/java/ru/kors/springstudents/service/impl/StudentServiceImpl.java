@@ -112,9 +112,6 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional(readOnly = true)
     public StudentDetailsDto findDtoByEmail(String email) {
-        if (log.isDebugEnabled()) {
-            log.debug("Attempting to find student by email: {}", Encode.forJava(email));
-        }
         Student student = repository.findStudentByEmail(email);
         if (student == null) {
             if (log.isWarnEnabled()) {
