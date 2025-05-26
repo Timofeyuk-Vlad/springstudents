@@ -67,7 +67,6 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional(readOnly = true)
     public StudentDetailsDto findStudentDetailsById(Long id) {
-        // ID не является user-controlled в этом контексте для логирования, его можно логировать напрямую
         log.debug("Attempting to find student details by ID: {}", id);
         Optional<StudentDetailsDto> cachedDto = studentCache.get(id);
         if (cachedDto.isPresent()) {
