@@ -60,7 +60,7 @@ public class StudentServiceImpl implements StudentService {
     @Transactional(readOnly = true)
     public List<StudentDetailsDto> findAllStudentsDetails() {
         log.debug("Fetching details for all students");
-        List<Student> students = repository.findAll();
+        List<Student> students = repository.findAll(); //важный коммент
         return mapper.toDetailsDtoList(students);
     }
 
