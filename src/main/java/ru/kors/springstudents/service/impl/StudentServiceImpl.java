@@ -61,7 +61,7 @@ public class StudentServiceImpl implements StudentService {
     public List<StudentDetailsDto> findAllStudentsDetails() {
         log.debug("Fetching details for all students");
         List<Student> students = repository.findAll();
-        return mapper.toDetailsDtoList(students);
+        return mapper.toDetailsDtoList(students); //важный коммент
     }
 
     @Override
