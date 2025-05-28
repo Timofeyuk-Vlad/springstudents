@@ -2,14 +2,13 @@ package ru.kors.springstudents;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-// import org.springframework.context.annotation.EnableAspectJAutoProxy; // Если нужно
+import org.springframework.scheduling.annotation.EnableAsync;
 
 @SpringBootApplication
-// @EnableAspectJAutoProxy // Раскомментируй, если аспекты не работают
+@EnableAsync
 public class SpringStudentsApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(SpringStudentsApplication.class, args);
     }
-
 }
