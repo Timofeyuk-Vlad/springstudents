@@ -44,7 +44,7 @@ public class AsyncLogGenerationServiceImpl implements AsyncLogGenerationService 
   @Value("${generated.logs.path:generated-logs}")
   private String generatedLogsDirectoryPath;
 
-  private AsyncLogGenerationService self; // Для self-инъекции
+  private AsyncLogGenerationService self;
 
   @Autowired
   @Lazy
