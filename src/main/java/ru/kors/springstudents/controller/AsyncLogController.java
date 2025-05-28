@@ -132,7 +132,7 @@ public class AsyncLogController {
     } catch (FileNotFoundException e) {
       log.error("File not found for download, task ID {}: {}", taskId, e.getMessage());
       return ResponseEntity.notFound().build();
-    } catch (Exception e) { // Более общий перехват для других возможных ошибок I/O
+    } catch (Exception e) {
       log.error("Error preparing file for download, task ID {}: {}", taskId, e.getMessage(), e);
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
