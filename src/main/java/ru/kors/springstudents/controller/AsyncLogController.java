@@ -107,20 +107,18 @@ public class AsyncLogController {
     LogTaskStatusDto taskStatus = taskStatusOpt.get();
     if (taskStatus.getStatus() != LogTaskStatusDto.TaskStatus.COMPLETED) {
       log.info("Download request for task ID {} which is not completed. Status: {}", taskId, taskStatus.getStatus());
-      // Возвращаем текущий статус и код 202 Accepted
-      // или можно вернуть 409 Conflict с информацией, что задача еще не готова
-      return ResponseEntity.status(HttpStatus.ACCEPTED).body(null); // Убрали body(taskStatus) для ResponseEntity<Resource>
+      return ResponseEntity.status(HttpStatus.ACCEPTED).body(null);
     }
 
     Optional<String> filePathOpt = asyncLogGenerationService.getGeneratedLogFilePath(taskId);
-    if (filePathOpt.isEmpty() || filePathOpt.get().isBlank()) { // Проверяем, что путь не пустой
+    if (filePathOpt.isEmpty() || filePathOpt.get().isBlank()) {
       log.error("Task ID {} COMPLETED but file path is missing or blank.", taskId);
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // Это неожиданная ситуация
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 
     try {
       Path filePath = Paths.get(filePathOpt.get());
-      Resource resource = new FileSystemResource(filePath); // Теперь должно работать
+      Resource resource = new FileSystemResource(filePath);
 
       if (!resource.exists() || !resource.isReadable()) {
         throw new FileNotFoundException("Generated log file not found or not readable: " + filePathOpt.get());

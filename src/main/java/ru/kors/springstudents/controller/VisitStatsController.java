@@ -9,11 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.kors.springstudents.service.VisitCounterService;
 
 import java.util.Map;
@@ -34,18 +30,13 @@ public class VisitStatsController {
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Количество посещений",
           content = @Content(mediaType = "application/json", schema = @Schema(type="integer", format="int64")))
-      // Ошибка 404 здесь не нужна, так как сервис вернет 0, если путь не найден.
   })
-  @GetMapping("/path/{*requestPath}") // Звездочка захватывает весь оставшийся путь
+  @GetMapping("/path")
   public ResponseEntity<Long> getVisitsForPath(
-      @Parameter(description = "Ключ посещения (например, 'GET%20/api/v1/students' или 'POST%2Fapi%2Fv1%2Fevents%2F1'). " +
-          "Значение должно быть URL-кодировано.",
-          required = true, example = "GET%20/api/v1/students")
-      @PathVariable String requestPath) {
-    // @PathVariable автоматически URL-декодирует значение.
-    // Если ключ в мапе VisitCounterService хранится как "GET /api/v1/students",
-    // то при запросе /api/v1/stats/visits/path/GET%20/api/v1/students
-    // в метод придет requestPath = "GET /api/v1/students"
+      @Parameter(description = "Ключ посещения (например, 'GET /api/v1/students' или 'POST /api/v1/events/1'). " +
+          "Пробелы будут автоматически заменены на %20 клиентом.",
+          required = true, example = "GET /api/v1/students")
+      @RequestParam String requestPath) {
     return ResponseEntity.ok(visitCounterService.getVisitsForPath(requestPath));
   }
 

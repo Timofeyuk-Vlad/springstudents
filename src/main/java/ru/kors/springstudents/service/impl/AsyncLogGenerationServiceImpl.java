@@ -115,7 +115,7 @@ public class AsyncLogGenerationServiceImpl implements AsyncLogGenerationService 
           StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 
       log.info("Task {}: Simulating long operation...", taskId);
-      Thread.sleep(5000);
+      Thread.sleep(20000);
 
       taskStatuses.computeIfPresent(taskId, (id, status) -> {
         status.setStatus(LogTaskStatusDto.TaskStatus.COMPLETED);

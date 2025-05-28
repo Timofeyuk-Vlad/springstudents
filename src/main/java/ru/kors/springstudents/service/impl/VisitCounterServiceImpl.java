@@ -16,7 +16,7 @@ public class VisitCounterServiceImpl implements VisitCounterService {
   private static final Logger log = LoggerFactory.getLogger(VisitCounterServiceImpl.class);
 
   private final Map<String, AtomicLong> visitsByPath = new ConcurrentHashMap<>(); // Значение теперь AtomicLong
-  private final AtomicLong totalVisitsCounter = new AtomicLong(0); // Общий счетчик
+  private final AtomicLong totalVisitsCounter = new AtomicLong(0);
 
   @Override
   public void incrementVisit(String requestPath) {
@@ -24,13 +24,12 @@ public class VisitCounterServiceImpl implements VisitCounterService {
       log.warn("Attempted to increment visit count for null or empty request path.");
       return;
     }
-    // computeIfAbsent для AtomicLong
     visitsByPath.computeIfAbsent(requestPath, k -> {
       log.debug("Creating new visit counter for path: {}", k);
-      return new AtomicLong(0); // Инициализируем нулем
-    }).incrementAndGet(); // Увеличиваем счетчик для конкретного пути
+      return new AtomicLong(0);
+    }).incrementAndGet();
 
-    totalVisitsCounter.incrementAndGet(); // Увеличиваем общий счетчик
+    totalVisitsCounter.incrementAndGet();
   }
 
   @Override
