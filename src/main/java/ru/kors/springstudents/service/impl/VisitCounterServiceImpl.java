@@ -7,7 +7,7 @@ import ru.kors.springstudents.service.VisitCounterService;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong; // Используем AtomicLong
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 @Service
@@ -15,7 +15,7 @@ public class VisitCounterServiceImpl implements VisitCounterService {
 
   private static final Logger log = LoggerFactory.getLogger(VisitCounterServiceImpl.class);
 
-  private final Map<String, AtomicLong> visitsByPath = new ConcurrentHashMap<>(); // Значение теперь AtomicLong
+  private final Map<String, AtomicLong> visitsByPath = new ConcurrentHashMap<>();
   private final AtomicLong totalVisitsCounter = new AtomicLong(0);
 
   @Override
@@ -38,18 +38,18 @@ public class VisitCounterServiceImpl implements VisitCounterService {
       return 0;
     }
     AtomicLong counter = visitsByPath.get(requestPath);
-    return (counter != null) ? counter.get() : 0; // Используем .get()
+    return (counter != null) ? counter.get() : 0;
   }
 
   @Override
   public Map<String, Long> getAllVisitCounts() {
     return visitsByPath.entrySet().stream()
-        .collect(Collectors.toConcurrentMap(Map.Entry::getKey, entry -> entry.getValue().get())); // Используем .get()
+        .collect(Collectors.toConcurrentMap(Map.Entry::getKey, entry -> entry.getValue().get()));
   }
 
   @Override
   public long getTotalVisits() {
-    return totalVisitsCounter.get(); // Используем .get()
+    return totalVisitsCounter.get();
   }
 
   @Override
@@ -57,7 +57,7 @@ public class VisitCounterServiceImpl implements VisitCounterService {
     log.info("Clearing all visit counts. {} paths and {} total visits before clear.",
         visitsByPath.size(), totalVisitsCounter.get());
     visitsByPath.clear();
-    totalVisitsCounter.set(0); // Сбрасываем AtomicLong до 0
+    totalVisitsCounter.set(0);
     log.info("All visit counts cleared.");
   }
 }
