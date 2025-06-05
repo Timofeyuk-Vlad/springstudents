@@ -1,9 +1,8 @@
 package ru.kors.springstudents.service;
 
+import java.util.List;
 import ru.kors.springstudents.dto.BarterDto;
 import ru.kors.springstudents.dto.CreateBarterRequestDto;
-
-import java.util.List;
 
 public interface BarterService {
     List<BarterDto> findAllBarters();

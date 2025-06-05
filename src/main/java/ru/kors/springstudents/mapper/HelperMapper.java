@@ -1,15 +1,14 @@
 package ru.kors.springstudents.mapper;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Named;
-import ru.kors.springstudents.model.Student;
-import ru.kors.springstudents.model.Event;
-import ru.kors.springstudents.model.Barter;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.mapstruct.Mapper;
+import org.mapstruct.Named;
+import ru.kors.springstudents.model.Barter;
+import ru.kors.springstudents.model.Event;
+import ru.kors.springstudents.model.Student;
 
 @Mapper(componentModel = "spring")
 public class HelperMapper {

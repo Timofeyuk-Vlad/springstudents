@@ -1,5 +1,8 @@
 package ru.kors.springstudents.service.impl;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,10 +15,6 @@ import ru.kors.springstudents.model.Student;
 import ru.kors.springstudents.repository.EventRepository;
 import ru.kors.springstudents.repository.StudentRepository;
 import ru.kors.springstudents.service.EventService;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor

@@ -1,9 +1,8 @@
 package ru.kors.springstudents.service;
 
+import java.util.List;
 import ru.kors.springstudents.dto.CreateEventRequestDto;
 import ru.kors.springstudents.dto.EventDto;
-
-import java.util.List;
 
 public interface EventService {
     List<EventDto> findAllEvents();

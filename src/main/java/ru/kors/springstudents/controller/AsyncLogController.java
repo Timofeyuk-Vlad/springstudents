@@ -1,4 +1,3 @@
-// C:\springstudents\src\main\java\ru\kors\springstudents\controller\AsyncLogController.java
 package ru.kors.springstudents.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -8,20 +7,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import ru.kors.springstudents.dto.ErrorResponseDto;
-import ru.kors.springstudents.dto.LogTaskStatusDto;
-import ru.kors.springstudents.service.AsyncLogGenerationService;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -31,6 +16,24 @@ import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import ru.kors.springstudents.dto.ErrorResponseDto;
+import ru.kors.springstudents.dto.LogTaskStatusDto;
+import ru.kors.springstudents.service.AsyncLogGenerationService;
 
 @Tag(name = "Async Log Generation API", description = "API для асинхронной генерации и получения лог-файлов")
 @RestController
@@ -107,8 +110,8 @@ public class AsyncLogController {
   }
 
   @Operation(summary = "Скачать сгенерированный лог-файл по ID задачи",
-      description = "Файл доступен только если статус задачи 'COMPLETED'. " +
-          "Если задача в процессе, вернет 202 с текущим статусом задачи.")
+      description = "Файл доступен только если статус задачи 'COMPLETED'. "
+          + "Если задача в процессе, вернет 202 с текущим статусом задачи.")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Лог-файл для скачивания",
           content = @Content(mediaType = "text/plain")), // Для успешного скачивания файла

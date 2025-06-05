@@ -1,5 +1,11 @@
 package ru.kors.springstudents.service.impl;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.owasp.encoder.Encode;
 import org.slf4j.Logger;
@@ -20,9 +26,6 @@ import ru.kors.springstudents.model.Event;
 import ru.kors.springstudents.model.Student;
 import ru.kors.springstudents.repository.StudentRepository;
 import ru.kors.springstudents.service.StudentService;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -131,8 +134,8 @@ public class StudentServiceImpl implements StudentService {
                 return new ResourceNotFoundException(String.format(STUDENT_NOT_FOUND_BY_ID_MSG, id));
             });
 
-        if (!existingStudent.getEmail().equals(studentDto.getEmail()) &&
-            repository.findStudentByEmail(studentDto.getEmail()) != null) {
+        if (!existingStudent.getEmail().equals(studentDto.getEmail())
+            && repository.findStudentByEmail(studentDto.getEmail()) != null) {
             if (log.isWarnEnabled()) {
                 log.warn("Attempt to update student ID: {} with email {} that already exists for another student", id, Encode.forJava(studentDto.getEmail()));
             }

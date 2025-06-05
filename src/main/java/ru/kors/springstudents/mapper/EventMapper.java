@@ -1,14 +1,13 @@
 package ru.kors.springstudents.mapper;
 
+import java.util.List;
+import java.util.Set;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import ru.kors.springstudents.dto.CreateEventRequestDto;
 import ru.kors.springstudents.dto.EventDto;
 import ru.kors.springstudents.model.Event;
-
-import java.util.List;
-import java.util.Set;
 
 @Mapper(componentModel = "spring", uses = HelperMapper.class)
 public interface EventMapper {

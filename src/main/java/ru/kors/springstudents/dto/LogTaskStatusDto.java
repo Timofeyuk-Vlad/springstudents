@@ -1,7 +1,7 @@
 package ru.kors.springstudents.dto;
 
-import lombok.Data;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
@@ -10,13 +10,13 @@ import lombok.NoArgsConstructor;
 public class LogTaskStatusDto {
   private String taskId;
   private TaskStatus status;
-  private String message; // Сообщение об ошибке или прогрессе
-  private String filePath; // Путь к файлу, если готов
+  private String message;
+  private String filePath;
 
   public enum TaskStatus {
-    PENDING,    // В очереди
-    PROCESSING, // В обработке
-    COMPLETED,  // Завершено
-    FAILED      // Ошибка
+    PENDING,
+    PROCESSING,
+    COMPLETED,
+    FAILED
   }
 }

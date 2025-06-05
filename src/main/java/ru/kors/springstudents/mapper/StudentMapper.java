@@ -1,12 +1,14 @@
 package ru.kors.springstudents.mapper;
 
+import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
-import ru.kors.springstudents.dto.*;
+import ru.kors.springstudents.dto.CreateStudentRequestDto;
+import ru.kors.springstudents.dto.StudentDetailsDto;
+import ru.kors.springstudents.dto.StudentSummaryDto;
+import ru.kors.springstudents.dto.UpdateStudentRequestDto;
 import ru.kors.springstudents.model.Student;
-
-import java.util.List;
 
 @Mapper(componentModel = "spring", uses = {
     HelperMapper.class,
@@ -16,9 +18,11 @@ import java.util.List;
 public interface StudentMapper {
 
     StudentSummaryDto toSummaryDto(Student student);
+
     List<StudentSummaryDto> toSummaryDtoList(List<Student> students);
 
     StudentDetailsDto toDetailsDto(Student student);
+
     List<StudentDetailsDto> toDetailsDtoList(List<Student> students);
 
     @Mapping(target = "id", ignore = true)

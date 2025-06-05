@@ -1,14 +1,13 @@
 package ru.kors.springstudents.service.impl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-import ru.kors.springstudents.service.VisitCounterService;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import ru.kors.springstudents.service.VisitCounterService;
 
 @Service
 public class VisitCounterServiceImpl implements VisitCounterService {

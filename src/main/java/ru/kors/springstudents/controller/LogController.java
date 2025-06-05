@@ -6,14 +6,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -21,6 +13,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Log API", description = "API для получения лог-файлов")
 @RestController
@@ -33,8 +35,8 @@ public class LogController {
   private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
   @Operation(summary = "Получить лог-файл по дате",
-      description = "Возвращает файл application.log за указанную дату. " +
-          "Если запрошена сегодняшняя дата и ротированный файл не найден, вернет текущий application.log.")
+      description = "Возвращает файл application.log за указанную дату. "
+          + "Если запрошена сегодняшняя дата и ротированный файл не найден, вернет текущий application.log.")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Лог-файл успешно получен",
           content = @Content(mediaType = "text/plain")),
@@ -64,12 +66,12 @@ public class LogController {
         }
       }
 
-      InputStreamResource resource = new InputStreamResource(new FileInputStream(logFile));
       HttpHeaders headers = new HttpHeaders();
       headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + logFile.getName());
       headers.add(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate");
       headers.add(HttpHeaders.PRAGMA, "no-cache");
       headers.add(HttpHeaders.EXPIRES, "0");
+      InputStreamResource resource = new InputStreamResource(new FileInputStream(logFile));
 
       return ResponseEntity.ok()
           .headers(headers)

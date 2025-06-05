@@ -1,16 +1,5 @@
 package ru.kors.springstudents.service.impl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
-import ru.kors.springstudents.dto.LogTaskStatusDto;
-import ru.kors.springstudents.service.AsyncLogGenerationService;
-import org.springframework.beans.factory.annotation.Autowired; // Для self-инъекции
-import org.springframework.context.annotation.Lazy;       // Для self-инъекции
-
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -23,11 +12,19 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-// import java.util.UUID; // Больше не нужен UUID
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong; // Используем AtomicLong для ID
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+import ru.kors.springstudents.dto.LogTaskStatusDto;
+import ru.kors.springstudents.service.AsyncLogGenerationService;
 
 @Service
 public class AsyncLogGenerationServiceImpl implements AsyncLogGenerationService {
@@ -36,7 +33,7 @@ public class AsyncLogGenerationServiceImpl implements AsyncLogGenerationService 
   private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
   private final Map<String, LogTaskStatusDto> taskStatuses = new ConcurrentHashMap<>();
-  private final AtomicLong taskIdCounter = new AtomicLong(1); // Начальное значение для ID задачи
+  private final AtomicLong taskIdCounter = new AtomicLong(1);
 
   @Value("${logging.file.path:logs}")
   private String sourceLogsDirectoryPath;
@@ -54,21 +51,20 @@ public class AsyncLogGenerationServiceImpl implements AsyncLogGenerationService 
 
   @Override
   public String generateLogFileAsync(LocalDate date) {
-    // Генерируем последовательный ID задачи
     long nextId = taskIdCounter.getAndIncrement();
-    String taskId = String.valueOf(nextId); // Преобразуем long в String
+    String taskId = String.valueOf(nextId);
 
     LogTaskStatusDto statusDto = new LogTaskStatusDto(taskId, LogTaskStatusDto.TaskStatus.PENDING, "Task created", null);
     taskStatuses.put(taskId, statusDto);
 
     log.info("Task {} created for generating log for date: {}", taskId, date);
-    self.processLogGeneration(taskId, date); // Вызываем асинхронный метод через self-прокси
+    self.processLogGeneration(taskId, date);
     return taskId;
   }
 
-  @Async // Этот метод должен быть public (или в интерфейсе) для работы @Async через прокси
-  @Override // Если он в интерфейсе
-  public void processLogGeneration(String taskId, LocalDate date) { // Сделаем public для вызова через self
+  @Async
+  @Override
+  public void processLogGeneration(String taskId, LocalDate date) {
     taskStatuses.computeIfPresent(taskId, (id, status) -> {
       status.setStatus(LogTaskStatusDto.TaskStatus.PROCESSING);
       status.setMessage("Processing log generation...");
@@ -87,7 +83,6 @@ public class AsyncLogGenerationServiceImpl implements AsyncLogGenerationService 
       Path sourceLogFilePath = Paths.get(sourceLogsDirectoryPath, sourceLogFileNamePattern);
       File sourceLogFile = sourceLogFilePath.toFile();
 
-      // Используем taskId полностью в имени файла, так как он теперь числовой и короткий
       String targetFileName = "log_report_" + date.format(DATE_FORMATTER) + "_task_" + taskId + ".log";
       Path targetFilePath = generatedDir.resolve(targetFileName);
 
@@ -95,7 +90,7 @@ public class AsyncLogGenerationServiceImpl implements AsyncLogGenerationService 
         if (date.equals(LocalDate.now())) {
           sourceLogFilePath = Paths.get(sourceLogsDirectoryPath, "application.log");
           sourceLogFile = sourceLogFilePath.toFile();
-          if (!sourceLogFile.exists()){
+          if (!sourceLogFile.exists()) {
             log.warn("Task {}: Source log file application.log not found for today.", taskId);
             throw new IOException("Source log file application.log not found for today.");
           }

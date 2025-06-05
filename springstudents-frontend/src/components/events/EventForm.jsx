@@ -1,12 +1,6 @@
-// src/components/events/EventForm.jsx
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, DatePicker, Select, message, Alert } from 'antd';
 import dayjs from 'dayjs';
-// Если будешь работать с UTC или другими поясами явно, раскомментируй
-// import utc from 'dayjs/plugin/utc';
-// import timezone from 'dayjs/plugin/timezone';
-// dayjs.extend(utc);
-// dayjs.extend(timezone);
 import { createEvent, updateEvent } from '../../services/api'; // Убедись, что путь верный
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 dayjs.extend(isSameOrAfter);
@@ -25,14 +19,11 @@ const EventForm = ({ visible, onCancel, event, onSuccess, students = [] }) => {
                 form.setFieldsValue({
                     name: event.name || '',
                     description: event.description || '',
-                    // event.date с бэкенда - это LocalDateTime, представленное как строка.
-                    // dayjs() по умолчанию парсит строку как локальное время.
                     date: event.date ? dayjs(event.date) : null,
                     studentIds: event.studentIds || []
                 });
-            } else { // Создание
+            } else {
                 form.resetFields();
-                // Устанавливаем завтра в 10:00 локального времени
                 form.setFieldsValue({ date: dayjs().add(1, 'day').hour(10).minute(0).second(0) });
             }
         }
@@ -44,10 +35,6 @@ const EventForm = ({ visible, onCancel, event, onSuccess, students = [] }) => {
             const values = await form.validateFields();
             setSubmitting(true);
 
-            // values.date - это объект dayjs в локальном времени пользователя
-            // Форматируем его в строку, которую LocalDateTime на бэкенде сможет понять
-            // Обычно это ISO формат БЕЗ информации о часовом поясе (без 'Z' или смещения)
-            // Например, "YYYY-MM-DDTHH:mm:ss"
             const dateForBackend = values.date ? values.date.format('YYYY-MM-DDTHH:mm:ss') : null;
 
             const payload = {

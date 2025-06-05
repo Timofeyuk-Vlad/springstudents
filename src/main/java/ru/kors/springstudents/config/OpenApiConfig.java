@@ -5,11 +5,10 @@ import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.servers.Server;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.List;
 
 @Configuration
 public class OpenApiConfig {
@@ -21,7 +20,7 @@ public class OpenApiConfig {
   private String serverDescription;
 
   @Bean
-  public OpenAPI customOpenAPI() {
+  public OpenAPI customOpenApi() {
     String appTitle = "Spring Students API";
     String appVersion = "v1.0.0";
     String appDescription = "API для управления студентами и связанными с ними сущностями (события, обмены и т.д.).";

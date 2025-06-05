@@ -8,19 +8,16 @@ const api = axios.create({
     },
 });
 
-// Students
 export const fetchStudents = () => api.get('/students/details');
 export const createStudent = (data) => api.post('/students', data);
 export const updateStudent = (id, data) => api.put(`/students/${id}`, data);
 export const deleteStudent = (id) => api.delete(`/students/${id}`);
 
-// Events
 export const fetchEvents = () => api.get('/events');
 export const createEvent = (data) => api.post('/events', data);
 export const updateEvent = (id, data) => api.put(`/events/${id}`, data);
 export const deleteEvent = (id) => api.delete(`/events/${id}`);
 
-// Barters
 export const fetchBarters = () => api.get('/barters');
 export const createBarter = (data) => api.post('/barters', data);
 export const updateBarter = (id, data) => api.put(`/barters/${id}`, data);

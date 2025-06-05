@@ -48,7 +48,7 @@ class BarterServiceImplTest {
   @Captor
   private ArgumentCaptor<Barter> barterArgumentCaptor;
   @Captor
-  private ArgumentCaptor<Set<Barter>> barterSetCaptor; // Captor для Set<Barter>
+  private ArgumentCaptor<Set<Barter>> barterSetCaptor;
 
 
   private Barter barter1, barter2;
@@ -79,7 +79,6 @@ class BarterServiceImplTest {
         .item("Книга 1")
         .status("ACTIVE")
         .studentId(1L)
-        // .studentFullName(student1.getFirstName() + " " + student1.getLastName()) // Если добавили
         .build();
 
     barterDto2 = BarterDto.builder()
@@ -87,7 +86,6 @@ class BarterServiceImplTest {
         .item("Книга 2")
         .status("PENDING")
         .studentId(1L)
-        // .studentFullName(student1.getFirstName() + " " + student1.getLastName()) // Если добавили
         .build();
 
     createBarterRequestDto = CreateBarterRequestDto.builder()
@@ -125,7 +123,6 @@ class BarterServiceImplTest {
     @DisplayName("findAllBarters should return empty list when no barters exist")
     void findAllBarters_shouldReturnEmptyList_whenNoBartersExist() {
       when(barterRepository.findAll()).thenReturn(Collections.emptyList());
-      // Маппер будет вызван с пустым Set
       when(barterMapper.toDtoList(Collections.emptySet())).thenReturn(Collections.emptyList());
 
       List<BarterDto> result = barterService.findAllBarters();
@@ -136,7 +133,6 @@ class BarterServiceImplTest {
       verify(barterMapper).toDtoList(Collections.emptySet());
     }
 
-    // ... (остальные тесты findById остаются без изменений) ...
     @Test
     @DisplayName("findBarterById should return BarterDto when barter exists")
     void findBarterById_shouldReturnBarterDto_whenBarterExists() {
@@ -159,7 +155,6 @@ class BarterServiceImplTest {
     }
   }
 
-  // ... (тесты SaveOperations остаются без изменений) ...
   @Nested
   @DisplayName("Save Operations")
   class SaveOperations {

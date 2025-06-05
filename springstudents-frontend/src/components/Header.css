@@ -16,20 +16,18 @@
     color: white;
     font-size: 1.2rem;
     font-weight: bold;
-    line-height: 30px; /* Центрируем вертикально */
+    line-height: 30px;
     margin: 0;
     padding: 0;
     white-space: nowrap;
-    background: none !important; /* Убираем белый фон */
+    background: none !important;
 }
 
-/* Стили для меню справа */
 .nav-menu {
     display: flex;
     height: 100%;
 }
 
-/* Убираем все белые элементы Ant Design */
 .ant-menu {
     background: transparent !important;
     border-bottom: none !important;

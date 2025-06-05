@@ -18,5 +18,5 @@ public class CreateBarterRequestDto {
     @NotBlank
     private String status;
     @NotNull
-    private Long studentId; // ID студента, который создает
+    private Long studentId;
 }

@@ -1,4 +1,4 @@
-package ru.kors.springstudents.config; // Измените на ваш пакет
+package ru.kors.springstudents.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;

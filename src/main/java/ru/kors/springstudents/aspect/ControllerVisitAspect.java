@@ -26,8 +26,8 @@ public class ControllerVisitAspect {
    * в пакете ru.kors.springstudents.controller,
    * ИСКЛЮЧАЯ класс VisitStatsController.
    */
-  @Pointcut("execution(public * ru.kors.springstudents.controller..*.*(..)) && " +
-      "!within(ru.kors.springstudents.controller.VisitStatsController)")
+  @Pointcut("execution(public * ru.kors.springstudents.controller..*.*(..)) && "
+      + "!within(ru.kors.springstudents.controller.VisitStatsController)")
   public void allControllersExceptStats() {}
 
   /**
