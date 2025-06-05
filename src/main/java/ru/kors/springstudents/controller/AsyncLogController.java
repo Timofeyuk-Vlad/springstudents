@@ -1,3 +1,4 @@
+// C:\springstudents\src\main\java\ru\kors\springstudents\controller\AsyncLogController.java
 package ru.kors.springstudents.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,11 +22,13 @@ import ru.kors.springstudents.dto.ErrorResponseDto;
 import ru.kors.springstudents.dto.LogTaskStatusDto;
 import ru.kors.springstudents.service.AsyncLogGenerationService;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
@@ -43,23 +46,34 @@ public class AsyncLogController {
   @ApiResponses(value = {
       @ApiResponse(responseCode = "202", description = "Задача по генерации лога принята",
           content = @Content(mediaType = "application/json",
-              schema = @Schema(type = "object", example = "{\"taskId\": \"uuid-string\"}"))),
+              schema = @Schema(type = "object", example = "{\"taskId\": \"1\", \"message\": \"Задача принята. Обработка запущена.\"}"))),
       @ApiResponse(responseCode = "400", description = "Неверный формат даты",
           content = @Content(mediaType = "application/json",
               schema = @Schema(implementation = ErrorResponseDto.class)))
   })
   @PostMapping("/generate-by-date")
-  public ResponseEntity<?> requestLogGeneration(@RequestParam String dateString) {
+  public ResponseEntity<?> requestLogGeneration(
+      @Parameter(description = "Дата в формате YYYY-MM-DD", required = true, example = "2025-05-15")
+      @RequestParam String dateString) {
     try {
       LocalDate date = LocalDate.parse(dateString);
       String taskId = asyncLogGenerationService.generateLogFileAsync(date);
-      return ResponseEntity.status(HttpStatus.ACCEPTED).body(Map.of("taskId", taskId));
-    } catch (DateTimeParseException e) {
-      log.warn("Invalid date format received for log generation: {}", dateString, e);
-      return ResponseEntity.badRequest().body(
-          new ErrorResponseDto(null, HttpStatus.BAD_REQUEST.value(), "Bad Request",
-              "Invalid date format. Please use YYYY-MM-DD.", "/api/v1/async-logs/generate-by-date", null)
+      Map<String, String> responseBody = Map.of(
+          "taskId", taskId,
+          "message", "Log generation task accepted. Processing started."
       );
+      return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(MediaType.APPLICATION_JSON).body(responseBody);
+    } catch (DateTimeParseException e) {
+      log.warn("Invalid date format received for log generation: {}. Details: {}", dateString, e.getMessage());
+      ErrorResponseDto errorDto = new ErrorResponseDto(
+          LocalDateTime.now(),
+          HttpStatus.BAD_REQUEST.value(),
+          "Bad Request",
+          "Invalid date format. Please use YYYY-MM-DD.",
+          "/api/v1/async-logs/generate-by-date",
+          Collections.singletonList("dateString: " + e.getParsedString() + " - " + e.getMessage())
+      );
+      return ResponseEntity.badRequest().contentType(MediaType.APPLICATION_JSON).body(errorDto);
     }
   }
 
@@ -73,47 +87,67 @@ public class AsyncLogController {
               schema = @Schema(implementation = ErrorResponseDto.class)))
   })
   @GetMapping("/status/{taskId}")
-  public ResponseEntity<LogTaskStatusDto> getLogGenerationStatus(
+  public ResponseEntity<?> getLogGenerationStatus(
       @Parameter(description = "ID задачи генерации лога", required = true)
       @PathVariable String taskId) {
     return asyncLogGenerationService.getTaskStatus(taskId)
-        .map(ResponseEntity::ok)
-        .orElseGet(() -> ResponseEntity.notFound().build());
+        .<ResponseEntity<?>>map(status -> ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(status))
+        .orElseGet(() -> {
+          log.warn("Status request for non-existent task ID: {}", taskId);
+          ErrorResponseDto errorDto = new ErrorResponseDto(
+              LocalDateTime.now(),
+              HttpStatus.NOT_FOUND.value(),
+              "Not Found",
+              "Task with ID " + taskId + " not found.",
+              "/api/v1/async-logs/status/" + taskId,
+              null
+          );
+          return ResponseEntity.status(HttpStatus.NOT_FOUND).contentType(MediaType.APPLICATION_JSON).body(errorDto);
+        });
   }
 
   @Operation(summary = "Скачать сгенерированный лог-файл по ID задачи",
-      description = "Файл доступен только если статус задачи 'COMPLETED'.")
+      description = "Файл доступен только если статус задачи 'COMPLETED'. " +
+          "Если задача в процессе, вернет 202 с текущим статусом задачи.")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Лог-файл для скачивания",
-          content = @Content(mediaType = "text/plain")),
-      @ApiResponse(responseCode = "404", description = "Задача не найдена, не завершена или файл не найден",
+          content = @Content(mediaType = "text/plain")), // Для успешного скачивания файла
+      @ApiResponse(responseCode = "202", description = "Задача еще в процессе выполнения",
+          content = @Content(mediaType = "application/json", // Указываем, что возвращаем JSON
+              schema = @Schema(implementation = LogTaskStatusDto.class))),
+      @ApiResponse(responseCode = "404", description = "Задача не найдена или файл не найден после завершения",
           content = @Content(mediaType = "application/json",
               schema = @Schema(implementation = ErrorResponseDto.class))),
-      @ApiResponse(responseCode = "202", description = "Задача еще в процессе выполнения (статус не COMPLETED)",
+      @ApiResponse(responseCode = "500", description = "Ошибка на сервере при подготовке файла",
           content = @Content(mediaType = "application/json",
-              schema = @Schema(implementation = LogTaskStatusDto.class)))
+              schema = @Schema(implementation = ErrorResponseDto.class)))
   })
   @GetMapping("/download/{taskId}")
-  public ResponseEntity<Resource> downloadGeneratedLog(
+  public ResponseEntity<?> downloadGeneratedLog(
       @Parameter(description = "ID задачи, для которой был сгенерирован лог", required = true)
       @PathVariable String taskId) {
 
     Optional<LogTaskStatusDto> taskStatusOpt = asyncLogGenerationService.getTaskStatus(taskId);
+    String requestPath = "/api/v1/async-logs/download/" + taskId;
+
     if (taskStatusOpt.isEmpty()) {
       log.warn("Download request for non-existent task ID: {}", taskId);
-      return ResponseEntity.notFound().build();
+      ErrorResponseDto errorDto = new ErrorResponseDto(LocalDateTime.now(), HttpStatus.NOT_FOUND.value(), "Not Found", "Task with ID " + taskId + " not found.", requestPath, null);
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).contentType(MediaType.APPLICATION_JSON).body(errorDto);
     }
 
     LogTaskStatusDto taskStatus = taskStatusOpt.get();
     if (taskStatus.getStatus() != LogTaskStatusDto.TaskStatus.COMPLETED) {
       log.info("Download request for task ID {} which is not completed. Status: {}", taskId, taskStatus.getStatus());
-      return ResponseEntity.status(HttpStatus.ACCEPTED).body(null);
+      // Явно указываем Content-Type для ответа 202
+      return ResponseEntity.status(HttpStatus.ACCEPTED).contentType(MediaType.APPLICATION_JSON).body(taskStatus);
     }
 
     Optional<String> filePathOpt = asyncLogGenerationService.getGeneratedLogFilePath(taskId);
     if (filePathOpt.isEmpty() || filePathOpt.get().isBlank()) {
       log.error("Task ID {} COMPLETED but file path is missing or blank.", taskId);
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+      ErrorResponseDto errorDto = new ErrorResponseDto(LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", "Log file path not found for completed task " + taskId + ".", requestPath, null);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(errorDto);
     }
 
     try {
@@ -121,20 +155,28 @@ public class AsyncLogController {
       Resource resource = new FileSystemResource(filePath);
 
       if (!resource.exists() || !resource.isReadable()) {
-        throw new FileNotFoundException("Generated log file not found or not readable: " + filePathOpt.get());
+        log.error("Generated log file not found or not readable for task ID {}: {}", taskId, filePathOpt.get());
+        ErrorResponseDto errorDto = new ErrorResponseDto(LocalDateTime.now(), HttpStatus.NOT_FOUND.value(), "Not Found", "Generated log file not found or unreadable for task " + taskId + ".", requestPath, null);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).contentType(MediaType.APPLICATION_JSON).body(errorDto);
       }
 
+      HttpHeaders headers = new HttpHeaders();
+      headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"");
+      // CONTENT_TYPE для файла устанавливается ниже с .contentType(MediaType.TEXT_PLAIN)
+      headers.add(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate");
+      headers.add(HttpHeaders.PRAGMA, "no-cache");
+      headers.add(HttpHeaders.EXPIRES, "0");
+
       return ResponseEntity.ok()
-          .contentType(MediaType.TEXT_PLAIN)
-          .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+          .headers(headers)
+          .contentLength(resource.contentLength())
+          .contentType(MediaType.TEXT_PLAIN) // Явно для файла
           .body(resource);
 
-    } catch (FileNotFoundException e) {
-      log.error("File not found for download, task ID {}: {}", taskId, e.getMessage());
-      return ResponseEntity.notFound().build();
-    } catch (Exception e) { // Более общий перехват для других возможных ошибок I/O
-      log.error("Error preparing file for download, task ID {}: {}", taskId, e.getMessage(), e);
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    } catch (IOException e) {
+      log.error("IO Error preparing file for download, task ID {}: {}", taskId, e.getMessage(), e);
+      ErrorResponseDto errorDto = new ErrorResponseDto(LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", "IO error preparing log file for task " + taskId + ".", requestPath, null);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(errorDto);
     }
   }
 }

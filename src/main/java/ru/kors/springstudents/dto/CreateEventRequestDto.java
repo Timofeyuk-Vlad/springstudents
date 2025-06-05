@@ -6,17 +6,22 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
 @Builder
 public class CreateEventRequestDto {
-    @NotBlank
+    @NotBlank(message = "Название события обязательно")
     private String name;
+
     private String description;
-    @NotNull @Future
+
+    @NotNull(message = "Дата события обязательна")
+    @Future(message = "Дата события должна быть в будущем")
     private LocalDateTime date;
-    @Size(min = 1) // Хотя бы один участник
-    private List<Long> studentIds; // ID студентов для добавления
+
+    @Size(min = 1, message = "Должен быть хотя бы один участник")
+    private List<Long> studentIds;
 }

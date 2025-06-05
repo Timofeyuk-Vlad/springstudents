@@ -1,7 +1,5 @@
-import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.gradle.api.tasks.testing.Test // Импорт для Test
-import org.gradle.testing.jacoco.tasks.JacocoReport // Импорт для JacocoReport
+import org.gradle.api.tasks.testing.Test
 
 val springBootVersion = "3.4.3"
 val springDependencyManagementVersion = "1.1.7"
@@ -77,32 +75,15 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-test") {
 		exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
 	}
-//	testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
-//	testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
-//	testImplementation("org.mockito:mockito-junit-jupiter:4.11.0")
-//	testImplementation("org.mockito:mockito-core:4.11.0")
 
 	testRuntimeOnly("com.h2database:h2")
-//	testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
-//	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
-//tasks.withType<Test> {
-//	useJUnitPlatform() // Это должно быть достаточно для обнаружения JUnit 5 тестов
-//	testLogging { // Оставляем для детального вывода
-//		events("passed", "skipped", "failed")
-//		exceptionFormat = TestExceptionFormat.FULL
-//		showStandardStreams = true
-//	}
-//	// УБЕРИ ВСЕ include, exclude, filter - пусть Gradle ищет тесты по умолчанию
-//}
-
 tasks.withType<Test> {
-	useJUnitPlatform() // Это должно быть достаточно для обнаружения JUnit 5 тестов
+	useJUnitPlatform()
 	testLogging {
 		events("passed", "skipped", "failed")
-		exceptionFormat = TestExceptionFormat.FULL // Полный stack trace ошибок
-		showStandardStreams = true // Полезно видеть System.out/err из тестов
+		exceptionFormat = TestExceptionFormat.FULL
+		showStandardStreams = true
 	}
-	// Убери или закомментируй любые filter, includeClasses, include, exclude
 }

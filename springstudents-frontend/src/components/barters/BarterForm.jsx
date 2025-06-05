@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'; // Добавлен импорт React и хуков
+import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, Select, message } from 'antd';
 import { fetchStudents, createBarter, updateBarter } from '../../services/api';
 
@@ -13,9 +13,14 @@ const BarterForm = ({ visible, onCancel, barter, onSuccess }) => {
         if (visible) {
             loadStudents();
             if (barter) {
+                // При редактировании устанавливаем текущие значения
                 form.setFieldsValue(barter);
             } else {
+                // При создании сбрасываем форму и устанавливаем статус "active"
                 form.resetFields();
+                form.setFieldsValue({
+                    status: 'active'
+                });
             }
         }
     }, [visible, barter, form]);
@@ -45,7 +50,7 @@ const BarterForm = ({ visible, onCancel, barter, onSuccess }) => {
             onSuccess();
             onCancel();
         } catch (error) {
-            message.error('Ошибка: ' + error.response?.data?.message || error.message);
+            message.error('Ошибка: ' + (error.response?.data?.message || error.message));
         }
     };
 
@@ -58,20 +63,34 @@ const BarterForm = ({ visible, onCancel, barter, onSuccess }) => {
             confirmLoading={loading}
         >
             <Form form={form} layout="vertical">
-                <Form.Item name="item" label="Предмет" rules={[{ required: true }]}>
+                <Form.Item
+                    name="item"
+                    label="Предмет"
+                    rules={[{ required: true, message: 'Введите предмет обмена' }]}
+                >
                     <Input />
                 </Form.Item>
                 <Form.Item name="description" label="Описание">
                     <Input.TextArea />
                 </Form.Item>
-                <Form.Item name="status" label="Статус" rules={[{ required: true }]}>
-                    <Select>
+                <Form.Item
+                    name="status"
+                    label="Статус"
+                    rules={[{ required: true, message: 'Выберите статус' }]}
+                >
+                    <Select disabled={!barter}>
                         <Option value="active">Активен</Option>
-                        <Option value="closed">Завершен</Option>
+                        <Option value="closed" disabled={!barter}>
+                            Завершен
+                        </Option>
                     </Select>
                 </Form.Item>
-                <Form.Item name="studentId" label="Студент" rules={[{ required: true }]}>
-                    <Select>
+                <Form.Item
+                    name="studentId"
+                    label="Студент"
+                    rules={[{ required: true, message: 'Выберите студента' }]}
+                >
+                    <Select showSearch optionFilterProp="children">
                         {students.map((student) => (
                             <Option key={student.id} value={student.id}>
                                 {student.firstName} {student.lastName}

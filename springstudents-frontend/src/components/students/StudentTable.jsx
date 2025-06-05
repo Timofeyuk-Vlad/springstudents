@@ -57,6 +57,11 @@ const StudentTable = () => {
             key: 'email',
         },
         {
+            title: 'Дата рождения',
+            dataIndex: 'dateOfBirth',
+            key: 'dateOfBirth',
+        },
+        {
             title: 'События',
             dataIndex: 'events',
             key: 'events',
