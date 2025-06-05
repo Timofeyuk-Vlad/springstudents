@@ -17,7 +17,7 @@ const StudentForm = ({ visible, onCancel, student, onSuccess }) => {
                     dateOfBirth: student.dateOfBirth ? moment(student.dateOfBirth, 'YYYY-MM-DD') : null,
                 });
             } else {
-                setIsEditing(false); // Выключаем режим редактирования (режим создания)
+                setIsEditing(false);
                 form.resetFields();
             }
         }
