@@ -12,7 +12,6 @@ services:
       - pg_data:/var/lib/postgresql/data
 
   app:
-    #image: springstudents
     build: .
     restart: always
     depends_on:

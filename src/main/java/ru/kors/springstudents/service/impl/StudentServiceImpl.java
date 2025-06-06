@@ -35,7 +35,7 @@ public class StudentServiceImpl implements StudentService {
     private static final Logger log = LoggerFactory.getLogger(StudentServiceImpl.class);
 
     private static final String STUDENT_NOT_FOUND_BY_ID_MSG = "Student with id %d not found";
-    private static final String STUDENT_NOT_FOUND_BY_EMAIL_MSG = "Student with email %s not found"; // Оставляем %s для String.format
+    private static final String STUDENT_NOT_FOUND_BY_EMAIL_MSG = "Student with email %s not found";
     private static final String EMAIL_EXISTS_MSG = "Student with email %s already exists.";
     private static final String OTHER_EMAIL_EXISTS_MSG = "Another student with email %s already exists.";
 
@@ -64,7 +64,7 @@ public class StudentServiceImpl implements StudentService {
     public List<StudentDetailsDto> findAllStudentsDetails() {
         log.debug("Fetching details for all students");
         List<Student> students = repository.findAll();
-        return mapper.toDetailsDtoList(students); //важный коммент
+        return mapper.toDetailsDtoList(students);
     }
 
     @Override
