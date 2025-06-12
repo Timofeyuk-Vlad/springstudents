@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Input, Select, message } from 'antd';
+import { Modal, Form, Input, Select, Button, message } from 'antd';
 import { fetchStudents, createBarter, updateBarter } from '../../services/api';
 
 const { Option } = Select;
@@ -8,19 +8,16 @@ const BarterForm = ({ visible, onCancel, barter, onSuccess }) => {
     const [form] = Form.useForm();
     const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [filteredStudents, setFilteredStudents] = useState([]);
+    const [searchValue, setSearchValue] = useState('');
 
     useEffect(() => {
         if (visible) {
             loadStudents();
             if (barter) {
-                // При редактировании устанавливаем текущие значения
                 form.setFieldsValue(barter);
             } else {
-                // При создании сбрасываем форму и устанавливаем статус "active"
-                form.resetFields();
-                form.setFieldsValue({
-                    status: 'active'
-                });
+                resetForm();
             }
         }
     }, [visible, barter, form]);
@@ -30,11 +27,43 @@ const BarterForm = ({ visible, onCancel, barter, onSuccess }) => {
         try {
             const { data } = await fetchStudents();
             setStudents(data);
+            setFilteredStudents(data);
         } catch (error) {
-            message.error('Ошибка загрузки студентов');
+            message.error('Не удалось загрузить список студентов');
         } finally {
             setLoading(false);
         }
+    };
+
+    const resetForm = () => {
+        form.resetFields();
+        form.setFieldsValue({
+            status: 'active'
+        });
+        setSearchValue('');
+        setFilteredStudents(students);
+    };
+
+    const handleStudentSearch = (value) => {
+        setSearchValue(value);
+        if (value) {
+            const filtered = students.filter(student =>
+                `${student.firstName} ${student.lastName}`
+                    .toLowerCase()
+                    .includes(value.toLowerCase())
+            );
+            setFilteredStudents(filtered);
+        } else {
+            setFilteredStudents(students);
+        }
+    };
+
+    const clearSearch = () => {
+        setSearchValue('');
+        setFilteredStudents(students);
+        form.setFieldsValue({
+            studentId: undefined
+        });
     };
 
     const handleSubmit = async () => {
@@ -42,56 +71,99 @@ const BarterForm = ({ visible, onCancel, barter, onSuccess }) => {
             const values = await form.validateFields();
             if (barter) {
                 await updateBarter(barter.id, values);
-                message.success('Обмен обновлен');
+                message.success('Обмен успешно обновлён');
             } else {
                 await createBarter(values);
-                message.success('Обмен создан');
+                message.success('Новый обмен успешно создан');
             }
             onSuccess();
             onCancel();
         } catch (error) {
-            message.error('Ошибка: ' + (error.response?.data?.message || error.message));
+            message.error('Произошла ошибка: ' + (error.response?.data?.message || error.message));
         }
     };
 
     return (
         <Modal
-            title={barter ? 'Редактировать обмен' : 'Добавить обмен'}
+            title={barter ? 'Редактирование обмена' : 'Создание нового обмена'}
             visible={visible}
             onOk={handleSubmit}
             onCancel={onCancel}
             confirmLoading={loading}
+            okText={barter ? "Сохранить" : "Создать"}
+            cancelText="Отмена"
+            footer={[
+                <Button key="Сброс" onClick={resetForm}>
+                    Сбросить форму
+                </Button>,
+                <Button key="cancel" onClick={onCancel}>
+                    Отмена
+                </Button>,
+                <Button
+                    key="submit"
+                    type="primary"
+                    onClick={handleSubmit}
+                    loading={loading}
+                >
+                    {barter ? "Сохранить" : "Создать"}
+                </Button>,
+            ]}
         >
             <Form form={form} layout="vertical">
                 <Form.Item
                     name="item"
-                    label="Предмет"
-                    rules={[{ required: true, message: 'Введите предмет обмена' }]}
+                    label="Предмет обмена"
+                    rules={[{ required: true, message: 'Пожалуйста, укажите предмет обмена' }]}
                 >
-                    <Input />
+                    <Input placeholder="Например, учебник по математике" />
                 </Form.Item>
-                <Form.Item name="description" label="Описание">
-                    <Input.TextArea />
+
+                <Form.Item
+                    name="description"
+                    label="Подробное описание"
+                >
+                    <Input.TextArea placeholder="Опишите состояние предмета и условия обмена" />
                 </Form.Item>
+
                 <Form.Item
                     name="status"
-                    label="Статус"
-                    rules={[{ required: true, message: 'Выберите статус' }]}
+                    label="Статус обмена"
+                    rules={[{ required: true, message: 'Пожалуйста, выберите статус' }]}
                 >
                     <Select disabled={!barter}>
                         <Option value="active">Активен</Option>
                         <Option value="closed" disabled={!barter}>
-                            Завершен
+                            Завершён
                         </Option>
                     </Select>
                 </Form.Item>
+
                 <Form.Item
                     name="studentId"
-                    label="Студент"
-                    rules={[{ required: true, message: 'Выберите студента' }]}
+                    label="Участник обмена"
+                    rules={[{ required: true, message: 'Пожалуйста, выберите участника' }]}
+                    extra={
+                        <div style={{ marginTop: 8 }}>
+                            {searchValue && (
+                                <Button
+                                    type="link"
+                                    onClick={clearSearch}
+                                    size="small"
+                                >
+                                    Очистить фильтр
+                                </Button>
+                            )}
+                        </div>
+                    }
                 >
-                    <Select showSearch optionFilterProp="children">
-                        {students.map((student) => (
+                    <Select
+                        showSearch
+                        optionFilterProp="children"
+                        placeholder="Выберите студента из списка"
+                        onSearch={handleStudentSearch}
+                        filterOption={false}
+                    >
+                        {filteredStudents.map((student) => (
                             <Option key={student.id} value={student.id}>
                                 {student.firstName} {student.lastName}
                             </Option>

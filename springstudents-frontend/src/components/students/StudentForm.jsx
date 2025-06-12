@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'; // Добавили useState
+import React, { useEffect, useState } from 'react';
 import { Modal, Form, Input, DatePicker, message } from 'antd';
-import moment from 'moment'; // Ты используешь moment, оставляем его
+import moment from 'moment';
 import api from '../../services/api';
 
 const StudentForm = ({ visible, onCancel, student, onSuccess }) => {
@@ -13,7 +13,7 @@ const StudentForm = ({ visible, onCancel, student, onSuccess }) => {
                 setIsEditing(true);
                 form.setFieldsValue({
                     ...student,
-                    dateOfBirth: student.dateOfBirth ? moment(student.dateOfBirth, 'YYYY-MM-DD') : null,
+                    dateOfBirth: student.dateOfBirth ? moment(student.dateOfBirth) : null,
                 });
             } else {
                 setIsEditing(false);
@@ -36,7 +36,7 @@ const StudentForm = ({ visible, onCancel, student, onSuccess }) => {
 
             if (isEditing && student && student.id) {
                 await api.put(`/students/${student.id}`, data);
-                message.success('Студент обновлен');
+                message.success('Данные студента обновлены');
             } else {
                 await api.post('/students', data);
                 message.success('Студент добавлен');
@@ -46,11 +46,11 @@ const StudentForm = ({ visible, onCancel, student, onSuccess }) => {
             onCancel();
         } catch (errorInfo) {
             if (errorInfo.errorFields && errorInfo.errorFields.length > 0) {
-                console.error('Form Validation Failed:', errorInfo.errorFields);
+                console.error('Ошибка валидации формы:', errorInfo.errorFields);
                 message.error('Пожалуйста, исправьте ошибки в форме.');
             } else {
-                const errorMessage = errorInfo.response?.data?.message || errorInfo.message || 'Не удалось сохранить студента.';
-                console.error('Submission error:', errorInfo);
+                const errorMessage = errorInfo.response?.data?.message || errorInfo.message || 'Не удалось сохранить данные студента.';
+                console.error('Ошибка отправки:', errorInfo);
                 message.error(`Ошибка: ${errorMessage}`);
             }
         }
@@ -58,10 +58,12 @@ const StudentForm = ({ visible, onCancel, student, onSuccess }) => {
 
     return (
         <Modal
-            title={isEditing ? `Редактировать студента` : 'Добавить студента'}
+            title={isEditing ? 'Редактирование студента' : 'Добавление нового студента'}
             open={visible}
             onOk={handleSubmit}
             onCancel={onCancel}
+            okText="Ок"
+            cancelText="Отмена"
             destroyOnClose
         >
             <Form form={form} layout="vertical" name="student_form_modal">
@@ -84,7 +86,7 @@ const StudentForm = ({ visible, onCancel, student, onSuccess }) => {
                     label="Email"
                     rules={[
                         { required: true, message: 'Пожалуйста, введите email' },
-                        { type: 'email', message: 'Некорректный email' },
+                        { type: 'email', message: 'Некорректный формат email' },
                     ]}
                 >
                     <Input />
@@ -92,12 +94,11 @@ const StudentForm = ({ visible, onCancel, student, onSuccess }) => {
                 <Form.Item
                     name="dateOfBirth"
                     label="Дата рождения"
-                    rules={isEditing ? [] : [{ required: true, message: 'Пожалуйста, выберите дату рождения' }]}
+                    rules={isEditing ? [] : [{ required: true, message: 'Пожалуйста, укажите дату рождения' }]}
                 >
                     <DatePicker
                         style={{ width: '100%' }}
                         format="YYYY-MM-DD"
-                        disabled={isEditing}
                         disabledDate={current => current && current > moment().endOf('day')}
                     />
                 </Form.Item>

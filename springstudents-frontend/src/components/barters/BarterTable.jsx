@@ -53,6 +53,11 @@ const BarterTable = () => {
             title: 'Предмет',
             dataIndex: 'item',
             key: 'item',
+            locale: {
+                filterTitle: 'Фильтры',
+                filterConfirm: 'Применить',
+                filterReset: 'Сбросить',
+            },
         },
         {
             title: 'Статус',
@@ -62,6 +67,11 @@ const BarterTable = () => {
                 { text: 'Активен', value: 'active' },
                 { text: 'Завершен', value: 'closed' },
             ],
+            locale: {
+                filterTitle: 'Фильтры',
+                filterConfirm: 'Применить',
+                filterReset: 'Сбросить',
+            },
             onFilter: (value, record) => record.status === value,
             render: (status) => (
                 <Tag color={status === 'active' ? 'green' : 'red'}>
@@ -119,6 +129,13 @@ const BarterTable = () => {
                 loading={loading}
                 rowKey="id"
                 onChange={handleChange}
+                locale={{
+                    filterReset: 'Сбросить',
+                    filterConfirm: 'Применить',
+                    filterEmptyText: 'Нет фильтров',
+                    filterCheckall: 'Выбрать все',
+                    filterSearchPlaceholder: 'Поиск в фильтрах',
+                }}
             />
             <BarterForm
                 visible={isModalVisible}

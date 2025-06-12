@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, DatePicker, Select, message, Alert } from 'antd';
 import dayjs from 'dayjs';
-import { createEvent, updateEvent } from '../../services/api'; // Убедись, что путь верный
+import { createEvent, updateEvent } from '../../services/api';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 dayjs.extend(isSameOrAfter);
 
@@ -44,7 +44,7 @@ const EventForm = ({ visible, onCancel, event, onSuccess, students = [] }) => {
                 studentIds: values.studentIds || []
             };
 
-            console.log("Submitting payload:", payload);
+            console.log("Отправляемые данные:", payload);
 
             if (event && event.id) {
                 await updateEvent(event.id, payload);
@@ -82,56 +82,56 @@ const EventForm = ({ visible, onCancel, event, onSuccess, students = [] }) => {
 
     return (
         <Modal
-            title={event && event.id ? `Редактировать событие` : 'Добавить новое событие'}
+            title={event && event.id ? 'Редактирование события' : 'Создание нового события'}
             open={visible}
             onOk={() => form.submit()}
             onCancel={onCancel}
             confirmLoading={submitting}
             destroyOnClose
             width={600}
-            okText={event && event.id ? "Обновить" : "Создать"}
+            okText={event && event.id ? "Сохранить" : "Создать"}
             cancelText="Отмена"
         >
-            <Form form={form} layout="vertical" name="event_form_in_modal_corrected_date" onFinish={handleSubmit}>
+            <Form form={form} layout="vertical" name="event_form" onFinish={handleSubmit}>
                 {formError && <Alert message={formError} type="error" showIcon style={{ marginBottom: 16 }} />}
                 <Form.Item
                     name="name"
                     label="Название события"
-                    rules={[{ required: true, message: 'Пожалуйста, введите название события!' }]}
+                    rules={[{ required: true, message: 'Пожалуйста, введите название события' }]}
                 >
-                    <Input placeholder="Например, Весенний бал" />
+                    <Input placeholder="Введите название события" />
                 </Form.Item>
                 <Form.Item
                     name="description"
-                    label="Описание"
+                    label="Описание события"
                 >
-                    <Input.TextArea rows={3} placeholder="Краткое описание события" />
+                    <Input.TextArea rows={3} placeholder="Добавьте описание события" />
                 </Form.Item>
                 <Form.Item
                     name="date"
-                    label="Дата и время"
+                    label="Дата и время проведения"
                     rules={[
-                        { required: true, message: 'Пожалуйста, выберите дату и время!' },
+                        { required: true, message: 'Пожалуйста, укажите дату и время' },
                         { validator: validateDateNotInPast }
                     ]}
                 >
                     <DatePicker
-                        showTime={{ format: 'HH:mm' }} // Формат пикера времени
-                        format="YYYY-MM-DD HH:mm"    // Формат отображения в инпуте
+                        showTime={{ format: 'HH:mm' }}
+                        format="DD.MM.YYYY HH:mm"
                         style={{ width: '100%' }}
                         placeholder="Выберите дату и время"
                     />
                 </Form.Item>
                 <Form.Item
                     name="studentIds"
-                    label="Участники"
+                    label="Участники события"
                     rules={[
-                        { required: true, message: 'Пожалуйста, выберите хотя бы одного участника!' },
+                        { required: true, message: 'Необходимо выбрать хотя бы одного участника' },
                         {
                             validator: (_, value) =>
                                 value && value.length > 0
                                     ? Promise.resolve()
-                                    : Promise.reject(new Error('Выберите хотя бы одного участника!'))
+                                    : Promise.reject(new Error('Выберите хотя бы одного участника'))
                         }
                     ]}
                 >
@@ -139,7 +139,7 @@ const EventForm = ({ visible, onCancel, event, onSuccess, students = [] }) => {
                         mode="multiple"
                         allowClear
                         style={{ width: '100%' }}
-                        placeholder="Выберите студентов-участников"
+                        placeholder="Выберите участников из списка"
                         filterOption={(input, option) =>
                             (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                         }
