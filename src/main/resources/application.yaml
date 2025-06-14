@@ -1,63 +1,43 @@
 spring:
   application:
-    name: springstudents # Из application.properties
+    name: springstudents
   datasource:
     url: jdbc:postgresql://localhost:5432/student_db
     username: postgres
-    password: ${DB_PASSWORD} # Пароль лучше оставить как переменную окружения
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
       minimum-idle: 2
-      idle-timeout: 30000 # 30 секунд
-      max-lifetime: 1800000 # 30 минут
-      connection-timeout: 30000 # 30 секунд
+      idle-timeout: 30000
+      max-lifetime: 1800000
+      connection-timeout: 30000
   jpa:
     hibernate:
-      ddl-auto: update # Для разработки. Для продакшена используй validate или none + миграции (Flyway/Liquibase)
+      ddl-auto: update
     database: postgresql
-    database-platform: org.hibernate.dialect.PostgreSQLDialect # Явно указать диалект - хорошая практика
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
-    open-in-view: false # Хорошая практика, предотвращает LazyInitializationException вне транзакций
+    open-in-view: false
     properties:
       hibernate:
         format_sql: true
-        # Можно добавить другие полезные свойства Hibernate, например:
-        # generate_statistics: true # Для мониторинга производительности
-        # jdbc.lob.non_contextual_creation: true # Иногда нужно для работы с LOB в PostgreSQL
   cache:
-    type: simple # Для простого in-memory кэша Spring
-
-    # Конфигурация логирования (альтернативно logback-spring.xml, но можно и здесь часть настроить)
-    # logging:
-    #   level:
-    #     root: INFO
-    #     org.springframework.web: DEBUG
-    #     org.hibernate.SQL: DEBUG
-    #     org.hibernate.type.descriptor.sql: TRACE # Для параметров SQL
-    #   file:
-    #     name: logs/application.log # Если не используется logback-spring.xml для пути к файлу
-    # path: logs/ # Если используется logback-spring.xml, он переопределит это
-
+    type: simple
 
 server:
   port: 8080
   error:
-    include-stacktrace: on_param # Из application.properties
+    include-stacktrace: on_param
 
-# Настройка для Springdoc OpenAPI (Swagger) - значения по умолчанию, можно переопределить
 springdoc:
   swagger-ui:
-    path: /swagger-ui.html # Путь к Swagger UI
-    # disable-swagger-default-url: true # Если хочешь, чтобы /swagger-ui.html не редиректил
-    # operations-sorter: alpha # Сортировка операций
-    # tags-sorter: alpha # Сортировка тегов
+    path: /swagger-ui.html
   api-docs:
-    path: /v3/api-docs # Путь к JSON/YAML спецификации
+    path: /v3/api-docs
 
-# Отладка (если нужно включать/выключать)
-debug: false # Или true для более подробных логов Spring Boot
+debug: false
 
 generated:
   logs:
-    path: generated-logs # Директория, куда будут сохраняться сгенерированные отчеты по логам
+    path: generated-logs

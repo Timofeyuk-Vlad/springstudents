@@ -35,10 +35,6 @@ java {
 	}
 }
 
-checkstyle {
-	toolVersion = "10.21.2"
-}
-
 sonarqube {
 	properties {
 		property("sonar.projectKey", "Timofeyuk-Vlad_springstudents")
